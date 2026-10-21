@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Altuz | Membership, worn.</title>
+<meta name="description" content="Altuz is a private society of runners. Numbered, reflective pieces, released only to members. Drop 001 admits a hundred.">
+<link rel="canonical" href="https://altuz.vercel.app/">
+<meta name="theme-color" content="#e8eaec">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Altuz">
+<meta property="og:title" content="Altuz | Membership, worn.">
+<meta property="og:description" content="Altuz is a private society of runners. Numbered, reflective pieces, released only to members. Drop 001 admits a hundred.">
+<meta property="og:url" content="https://altuz.vercel.app/">
+<meta property="og:image" content="https://altuz.vercel.app/assets/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Altuz | Membership, worn.">
+<meta name="twitter:description" content="Altuz is a private society of runners. Numbered, reflective pieces, released only to members. Drop 001 admits a hundred.">
+<meta name="twitter:image" content="https://altuz.vercel.app/assets/img/og.jpg">
+<link rel="preload" href="/assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/site.css?v=1">
+<script src="/assets/js/boot.js"></script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Organization", "name": "Altuz", "url": "https://altuz.vercel.app", "logo": "https://altuz.vercel.app/assets/img/icon-512.png", "email": "projectaltuz@gmail.com", "slogan": "Run elevated"}</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="logo" viewBox="0 0 100 84"><path d="M44 0L53 0Q58 1 60.8 6L99.6 83.9L82.2 83.9L48.6 19.6L21.2 72.6L51 67.9L19.5 84L0.3 84L29.4 23.6L39.2 5.2Q41 1 44 0Z"/></symbol></svg>
+
+<div class="intro" id="intro">
+  <div class="iwrap" id="iwrap" aria-hidden="true"><span class="iword">ALTUZ</span></div>
+  <div class="iwrap bloom" id="ibloom" aria-hidden="true"><span class="iword">ALTUZ</span></div>
+  <div class="cone" id="cone1" aria-hidden="true"></div><div class="cone" id="cone2" aria-hidden="true"></div><div class="cone" id="cone3" aria-hidden="true"></div>
+  <div class="spot" id="spot1" aria-hidden="true"></div><div class="spot" id="spot2" aria-hidden="true"></div><div class="spot" id="spot3" aria-hidden="true"></div>
+  <div class="igrain" aria-hidden="true"></div>
+  <div class="ibar" aria-hidden="true"><i id="ibar"></i></div>
+  <button class="skip" id="skip" type="button">Enter</button>
+</div>
+
+<div class="bg" aria-hidden="true"><div class="brushed"></div><div class="orb o1"></div><div class="orb o2"></div><div class="halo" id="halo"></div><div class="grain"></div></div>
+
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="/" id="home" aria-label="Altuz, home"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><span>ALTUZ</span></a>
+    <div class="top-right"><button class="hlink" id="legalBtn" type="button" aria-expanded="false" aria-controls="legalPop">Legal</button><button class="dark small" type="button" data-open="admission"><span class="lg">Request admission</span><span class="sm">Apply</span></button></div>
+  </div>
+</header>
+
+<main class="hero" id="main">
+  <div class="copy">
+    <h1 class="x-wide rv">Membership, worn.</h1>
+    <p class="lede rv" style="--d:.2s">Altuz is a private society of runners. Its pieces are numbered, reflective and released only to members. Wearing one means you were let in.</p>
+    <form class="capture glass rv" id="capture" style="--d:.35s" novalidate>
+      <label for="capEmail">Your email</label>
+      <input id="capEmail" type="email" autocomplete="email" placeholder="you@email.com" required>
+      <button class="dark" type="submit"><span class="lg">Request admission</span><span class="sm">Apply</span></button>
+    </form>
+    <p class="cap-err" id="capErr" role="alert"></p>
+    <p class="meta rv" style="--d:.5s"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><span>Drop 001 admits a hundred members. Requests close at pre-sale, in January 2027.</span></p>
+  </div>
+  <div class="cardzone rv" style="--d:.15s">
+    <button class="card" id="card" type="button" aria-pressed="false" aria-label="Your Altuz membership card. Press to turn it over.">
+      <span class="tilt" id="tilt">
+        <span class="flip">
+          <span class="face front">
+            <span class="band"></span>
+            <span class="sheen"></span><span class="prism"></span>
+            <span class="c-top eng"><svg class="logo c-logo" aria-hidden="true"><use href="#logo"/></svg><span class="c-word">ALTUZ</span><span class="c-no">No. <span id="cNo">047</span></span></span>
+            <span class="c-big" id="cBig">047</span>
+            <span class="c-bot eng"><span><small>Member</small><b id="cName">Your name</b></span><span class="r"><small>Rank</small><b id="cRank">Founder</b></span></span>
+          </span>
+          <span class="face back">
+            <span class="stripe"></span>
+            <canvas id="runner"></canvas>
+            <span class="sig"><small>Signature</small><b id="cSig">Your name</b></span>
+            <span class="fine">Personal and non-transferable. Valid for every drop and every Number Run. Lost cards are not replaced.</span>
+          </span>
+        </span>
+      </span>
+    </button>
+    <p class="card-cap">Your card, once you’re in. Press it to turn it over.</p>
+  </div>
+</main>
+
+<div class="ticker" aria-hidden="true">
+  <div class="track">
+    <div class="set"><span>Members only</span><svg class="logo"><use href="#logo"/></svg><span>Run elevated</span><svg class="logo"><use href="#logo"/></svg><span>Seen in the dark</span><svg class="logo"><use href="#logo"/></svg><span>Alta luz</span><svg class="logo"><use href="#logo"/></svg></div>
+    <div class="set"><span>Members only</span><svg class="logo"><use href="#logo"/></svg><span>Run elevated</span><svg class="logo"><use href="#logo"/></svg><span>Seen in the dark</span><svg class="logo"><use href="#logo"/></svg><span>Alta luz</span><svg class="logo"><use href="#logo"/></svg></div>
+  </div>
+</div>
+
+<nav class="dock glass" aria-label="Sections">
+  <button type="button" data-open="privileges" aria-controls="privileges" aria-expanded="false">Privileges</button>
+  <button type="button" data-open="code" aria-controls="code" aria-expanded="false">The code</button>
+  <button type="button" data-open="light" aria-controls="light" aria-expanded="false">The light</button>
+  <button type="button" data-open="number" aria-controls="number" aria-expanded="false">Your number</button>
+</nav>
+
+<div class="scrim" id="scrim" aria-hidden="true"></div>
+
+<section class="sheet glass" id="privileges" role="dialog" aria-modal="false" aria-labelledby="h-privileges" inert>
+  <div class="sheet-top"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><button class="x" type="button" data-close aria-label="Close"></button></div>
+  <div class="sheet-body">
+    <h2 class="x-wide pi" id="h-privileges" tabindex="-1">What members get.</h2>
+    <p class="p pi" style="--i:1">Membership isn’t bought once. It’s kept, with the piece and with the runs. None of this is offered outside.</p>
+    <div class="privs">
+      <div class="priv panel-row pi" style="--i:2"><h3>Your number, for life</h3><p>Reserved for you in every drop that follows.</p></div>
+      <div class="priv panel-row pi" style="--i:3"><h3>The door opens early</h3><p>Every drop opens to members 48 hours before anyone else.</p></div>
+      <div class="priv panel-row pi" style="--i:4"><h3>The Number Run</h3><p>Once a month, at dawn. Members only, by number.</p></div>
+      <div class="priv panel-row pi" style="--i:5"><h3>Your page in the Registry</h3><p>Your number, your runs and your rank, in the society’s private record.</p></div>
+      <div class="priv panel-row pi" style="--i:6"><h3>One invitation</h3><p>You may bring one runner into the society. Only one.</p></div>
+      <div class="priv panel-row pi" style="--i:7"><h3>Value that holds</h3><p>Nothing is discounted or restocked. What you wear never ends up on sale.</p></div>
+    </div>
+    <p class="ranks-h pi" style="--i:8">Three ranks, earned not bought</p>
+    <div class="ranks pi" style="--i:9">
+      <div class="rank"><b>Founder</b><span>The hundred of Drop 001. The first numbers ever issued.</span></div>
+      <div class="rank"><b>Member</b><span>Anyone holding a numbered piece.</span></div>
+      <div class="rank"><b>Resident</b><span>Five Number Runs. Chooses numbers first, invited to everything.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sheet glass" id="code" role="dialog" aria-modal="false" aria-labelledby="h-code" inert>
+  <div class="sheet-top"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><button class="x" type="button" data-close aria-label="Close"></button></div>
+  <div class="sheet-body">
+    <h2 class="x-wide pi" id="h-code" tabindex="-1">What stays outside.</h2>
+    <p class="p pi" style="--i:1">Out there, anyone can have anything. That’s exactly why we close the door.</p>
+    <div class="pairs">
+      <div class="pair pi" style="--i:2"><p class="out"><span>Anyone can buy it.</span></p><p class="inn">Only members wear it.</p></div>
+      <div class="pair pi" style="--i:3"><p class="out"><span>Restocked as soon as it sells out.</span></p><p class="inn">A hundred numbers. Never issued twice.</p></div>
+      <div class="pair pi" style="--i:4"><p class="out"><span>On sale every November.</span></p><p class="inn">One price. It never comes down.</p></div>
+      <div class="pair pi" style="--i:5"><p class="out"><span>Logos everyone recognises.</span></p><p class="inn">A mark only the light reveals.</p></div>
+      <div class="pair pi" style="--i:6"><p class="out"><span>Followers.</span></p><p class="inn">Members.</p></div>
+    </div>
+    <p class="rules-h pi" style="--i:7">The code</p>
+    <ul class="rules pi" style="--i:8">
+      <li>We run before sunrise or after sunset.</li>
+      <li>You introduce yourself by your number.</li>
+      <li>You bring one runner. Only one.</li>
+      <li>What’s said on the Number Run stays on the Number Run.</li>
+      <li>The piece is never resold outside the society.</li>
+    </ul>
+    <div class="contact pi" style="--i:9"><span>projectaltuz@gmail.com</span><button class="link" type="button" id="replay">Watch the entrance again</button></div>
+  </div>
+</section>
+
+<section class="sheet glass" id="light" role="dialog" aria-modal="false" aria-labelledby="h-light" inert>
+  <div class="sheet-top"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><button class="x" type="button" data-close aria-label="Close"></button></div>
+  <div class="sheet-body">
+    <h2 class="x-wide pi" id="h-light" tabindex="-1">Silver by day. White by night.</h2>
+    <p class="p pi" style="--i:1">Every piece carries a reflective mark: quiet silver in daylight, blazing white under headlights. Members see the whole piece first. Until then, three fragments.</p>
+    <div class="tiles pi" style="--i:2" id="tiles">
+      <figure class="tile"><div class="art" id="fragA"></div><figcaption>On the chest</figcaption></figure>
+      <figure class="tile"><div class="art" id="fragB"></div><figcaption>Once on each side</figcaption></figure>
+      <figure class="tile"><div class="art" id="fragC"></div><figcaption>Your number, on the hem</figcaption></figure>
+    </div>
+    <div class="light-row pi" style="--i:3">
+      <button class="dark" id="faro" type="button">Pass a car</button>
+      <p>Or move the light with your cursor or finger.</p>
+    </div>
+    <div class="drop panel-row pi" style="--i:4">
+      <b>Drop 001</b>
+      <span>The Tee, in black or white, and the Race Short. Each numbered 001 to 100. The price is shared with members first.</span>
+    </div>
+  </div>
+</section>
+
+<section class="sheet glass" id="number" role="dialog" aria-modal="false" aria-labelledby="h-number" inert>
+  <div class="sheet-top"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><button class="x" type="button" data-close aria-label="Close"></button></div>
+  <div class="sheet-body">
+    <h2 class="x-wide pi" id="h-number" tabindex="-1">Your number is yours.</h2>
+    <p class="p pi" style="--i:1">Numbers run from 001 to 100 and stay with you in every drop. Choose one and watch your card. If two people ask for the same number, the first request keeps it.</p>
+    <div class="odo-row pi" style="--i:2">
+      <div class="odo" aria-live="polite"><span class="big chrome" id="odo">047</span><span class="of">/ 100</span></div>
+      <div class="reg panel-row" aria-label="Preview of your card">
+        <span class="k">Card</span><span class="v" id="regNum">No. 047</span>
+        <span class="k">Rank</span><span class="v">Founder</span>
+      </div>
+    </div>
+    <div class="pick pi" style="--i:3" id="pick" role="radiogroup" aria-label="Choose your preferred number from 1 to 100"></div>
+    <div class="num-foot pi" style="--i:4">
+      <button class="dark" type="button" id="numCta" data-open="admission">Request No. 047</button>
+      <p>Arrow keys move through the numbers.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sheet glass" id="admission" role="dialog" aria-modal="false" aria-labelledby="h-admission" inert>
+  <div class="sheet-top"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><button class="x" type="button" data-close aria-label="Close"></button></div>
+  <div class="sheet-body" id="admBody">
+    <h2 class="x-wide pi" id="h-admission" tabindex="-1">Request admission.</h2>
+    <p class="p pi" style="--i:1">Drop 001 admits a hundred members. We read every request, and members choose their number before pre-sale opens in January.</p>
+    <form id="adm-form" class="pi" style="--i:2" novalidate>
+      <div class="hp" aria-hidden="true"><label for="company">Company</label><input id="company" name="company" type="text" tabindex="-1" autocomplete="off"></div>
+      <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required autocomplete="email" placeholder="you@email.com"></div>
+      <div class="row2">
+        <div class="field"><label for="alias">Name for your card</label><input id="alias" name="alias" type="text" maxlength="24" autocomplete="nickname" placeholder="Name or nickname"></div>
+        <div class="field"><label for="city">Where you run</label><input id="city" name="city" type="text" autocomplete="address-level2" placeholder="City"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="when">When you mostly run</label>
+          <select id="when" name="when"><option value="dawn">Before sunrise</option><option value="night">At dusk or at night</option><option value="day">During the day</option></select></div>
+        <div class="field"><label for="pref">Preferred number (1 to 100)</label><input id="pref" name="pref" type="number" min="1" max="100" value="47" inputmode="numeric"></div>
+      </div>
+      <div class="field"><label for="ref">Who sent you? (optional)</label><input id="ref" name="ref" type="text" placeholder="A name, a number or an account"></div>
+      <fieldset class="field"><legend>What you’d wear (choose any)</legend>
+        <div class="chips">
+          <label><input type="checkbox" name="piece" value="tee-black" checked><span>Black tee</span></label>
+          <label><input type="checkbox" name="piece" value="tee-white"><span>White tee</span></label>
+          <label><input type="checkbox" name="piece" value="race-short"><span>Race short</span></label>
+        </div>
+      </fieldset>
+      <label class="consent"><input id="consent" type="checkbox"><span id="consentText">I agree that Altuz may email me about my request, Drop 001 and the society. I can withdraw whenever I want.</span></label>
+      <p class="err" id="err" role="alert"></p>
+      <div><button class="dark" id="submit" type="submit">Send my request</button></div>
+      <p class="legal">Data controller: Altuz (Nils Lehmann Podadera). Purpose: reviewing your request and letting you know about the launch. Legal basis: your consent. To access, correct or delete your data, write to projectaltuz@gmail.com. <a href="/privacy">Privacy policy</a></p>
+    </form>
+  </div>
+</section>
+
+<nav class="pop glass" id="legalPop" aria-label="Legal" inert>
+  <a href="/legal">Legal notice<small>Who runs Altuz</small></a>
+  <a href="/privacy">Privacy<small>What we keep and why</small></a>
+  <a href="/cookies">Cookies<small>What the cloakroom holds</small></a>
+  <button type="button" data-cloakroom>Cloakroom settings<small>Change your choice</small></button>
+</nav>
+
+<aside class="ticket" id="ticket" role="dialog" aria-modal="false" aria-labelledby="t-h" aria-describedby="t-p" inert>
+  <div class="t-stub" aria-hidden="true">
+    <span class="t-no"><small>No.</small><span id="tNo">023</span></span>
+    <span class="t-hole"></span>
+    <span class="t-lab">CLOAKROOM</span>
+  </div>
+  <div class="t-main">
+    <p class="t-h" id="t-h">Leave your coat here.</p>
+    <p class="t-p" id="t-p">We only keep what the door needs to work. Counting visitors and remembering you for invitations is your call. <a href="/cookies">What we keep</a></p>
+    <div class="t-opts" id="tOpts" hidden>
+      <label class="t-opt"><b>The door</b><span>Remembers your choice and that you’ve seen the entrance. Always on.</span><input class="sw" type="checkbox" checked disabled aria-label="The door, always on"></label>
+      <label class="t-opt"><b>Footfall</b><span>Anonymous visit counts, so we know how many come in. No cookies.</span><input class="sw" type="checkbox" id="cFoot"></label>
+      <label class="t-opt"><b>Invitations</b><span>Lets Instagram and TikTok remind you of Altuz later.</span><input class="sw" type="checkbox" id="cInv"></label>
+    </div>
+    <div class="t-actions">
+      <button class="dark" type="button" data-consent="essential">Essentials only</button>
+      <button class="dark" type="button" data-consent="all">Allow all</button>
+      <button class="dark" type="button" data-consent="save" id="tSave" hidden>Keep my choice</button>
+      <button class="link" type="button" id="tChoose" aria-expanded="false" aria-controls="tOpts">Choose</button>
+    </div>
+  </div>
+</aside>
+<noscript><p>Altuz needs JavaScript for the entrance and the admission form. You can still write to projectaltuz@gmail.com.</p></noscript>
+<script src="/assets/js/config.js?v=1"></script>
+<script src="/assets/js/site.js?v=1"></script>
+<script src="/assets/js/consent.js?v=1"></script>
+</body>
+</html>

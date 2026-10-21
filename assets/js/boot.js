@@ -1,0 +1,1 @@
+(function(){var d=document.documentElement,rm=matchMedia('(prefers-reduced-motion: reduce)').matches;d.classList.add('js');try{if(!sessionStorage.getItem('altuz_intro')&&!rm)d.classList.add('intro-on')}catch(e){if(!rm)d.classList.add('intro-on')}})();
