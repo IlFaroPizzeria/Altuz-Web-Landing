@@ -326,6 +326,12 @@ const BEAMS=[
   {s:[1.1,1.15], a:[1.14,.28], b:[.34,.6], t0:1.05, t1:4.2, k:.92},
   {s:[.5,-.18], a:[.12,.78], b:[.9,.7], t0:2.35, t1:3.35, k:.55}
 ];
+/* on a phone held upright the word lies across the middle, so the beams sweep along that band */
+const BEAMS_P=[
+  {s:[-.15,1.08], a:[-.25,.57], b:[.72,.46], t0:.25, t1:3.9, k:1},
+  {s:[1.15,1.08], a:[1.25,.43], b:[.3,.56], t0:1.05, t1:4.2, k:.92},
+  {s:[.5,-.12], a:[.08,.49], b:[.92,.53], t0:2.35, t1:3.35, k:.6}
+];
 const env=(t,a,b)=>{ const fi=clamp((t-a)/.75,0,1), fo=clamp((b-t)/.6,0,1); return easeOut(Math.min(fi,fo)); };
 function startSite(){
   html.classList.add('site-in');
@@ -334,9 +340,9 @@ function startSite(){
 }
 function introFrame(now){
   const t=(now-it0)/1000, W=innerWidth, H=innerHeight, M=Math.max(W,H);
-  const portrait=H>W, rx=M*(portrait?.19:.165), ry=M*(portrait?.15:.135);
+  const portrait=H>W, rx=M*(portrait?.125:.165), ry=M*(portrait?.085:.135);
   const masks=[];
-  BEAMS.forEach((B,i)=>{
+  (portrait?BEAMS_P:BEAMS).forEach((B,i)=>{
     const p=easeIO(clamp((t-B.t0)/(B.t1-B.t0),0,1)), a=env(t,B.t0,B.t1)*(t<REVEAL?1:0);
     const x=(B.a[0]+(B.b[0]-B.a[0])*p)*W, y=(B.a[1]+(B.b[1]-B.a[1])*p)*H;
     const sx=B.s[0]*W, sy=B.s[1]*H, d=Math.hypot(x-sx,y-sy), ang=Math.atan2(y-sy,x-sx)*180/Math.PI;
