@@ -238,16 +238,6 @@ $('#scrim').addEventListener('click',()=>closeSheet());
 $('#home').addEventListener('click',e=>{ e.preventDefault(); closeSheet(); });
 addEventListener('keydown',e=>{ if(e.key==='Escape'&&current&&!html.classList.contains('intro-on')) closeSheet(); });
 
-/* ---------- hero email ---------- */
-const capErr=$('#capErr');
-$('#capture').addEventListener('submit',e=>{
-  e.preventDefault(); capErr.textContent='';
-  const v=$('#capEmail').value.trim();
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){ capErr.textContent='Enter a valid email so we can reply to your request.'; $('#capEmail').focus(); return; }
-  const em=$('#email'); if(em) em.value=v;
-  openSheet('admission',{trigger:$('#capture button'),focus:'#alias'});
-});
-
 /* ---------- headlight ---------- */
 $('#faro').addEventListener('click',()=>{
   const row=$('#tiles'); const t0=performance.now(), dur=4200; L.tr=300;
@@ -272,12 +262,26 @@ function setNum(n,fromInput){
   const step=now=>{ const p=clamp((now-t0)/d,0,1); shown=from+(n-from)*easeOut(p); const s=pad(Math.round(shown)); odo.textContent=s; cBig.textContent=s; if(p<1) tw=requestAnimationFrame(step); };
   tw=requestAnimationFrame(step);
 }
-pick.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) setNum(+b.dataset.n); });
+pick.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b&&!taken.has(+b.dataset.n)) setNum(+b.dataset.n); });
 pick.addEventListener('keydown',e=>{
   const d={ArrowRight:1,ArrowLeft:-1,ArrowDown:10,ArrowUp:-10}[e.key]; if(!d) return; e.preventDefault();
   const n=clamp(cur+d,1,100); setNum(n); const b=pick.querySelector('[data-n="'+n+'"]'); if(b) b.focus();
 });
-pref.addEventListener('input',()=>{ const v=parseInt(pref.value,10); if(v>=1&&v<=100) setNum(v,true); });
+pref.addEventListener('input',()=>{ const v=parseInt(pref.value,10); if(v>=1&&v<=100&&!taken.has(v)) setNum(v,true); });
+
+/* ---------- reserved numbers (read from Supabase; numbers only) ---------- */
+let taken=new Set();
+function markTaken(list){
+  taken=new Set(list||[]);
+  $$('button',pick).forEach(b=>{ const t=taken.has(+b.dataset.n); b.classList.toggle('taken',t); b.setAttribute('aria-disabled',t?'true':'false'); b.setAttribute('aria-label','Number '+b.dataset.n+(t?', already requested':'')); });
+  if(taken.has(cur)){ for(let d=1;d<100;d++){ const c=[cur+d,cur-d].find(n=>n>=1&&n<=100&&!taken.has(n)); if(c){ setNum(c); break; } } }
+}
+async function loadTaken(){
+  const C=window.ALTUZ_CONFIG||{}, url=(C.supabaseUrl||'').replace(/\/+$/,''), key=C.supabaseAnonKey||''; if(!url||!key) return;
+  const h={'apikey':key,'Content-Type':'application/json'}; if(!/^sb_/.test(key)) h.Authorization='Bearer '+key;
+  try{ const r=await fetch(url+'/rest/v1/rpc/taken_numbers',{method:'POST',headers:h,body:'{}'}); if(r.ok) markTaken(await r.json()); }catch(e){}
+}
+loadTaken();
 
 /* ---------- admission requests ---------- */
 const form=$('#adm-form'), err=$('#err'), btn=$('#submit');
@@ -287,7 +291,7 @@ async function save(row){
   const h={'apikey':key,'Content-Type':'application/json','Prefer':'return=minimal'};
   if(!/^sb_/.test(key)) h.Authorization='Bearer '+key;
   const r=await fetch(url+'/rest/v1/admission_requests',{method:'POST',headers:h,body:JSON.stringify(row)});
-  if(r.status===409) return 'duplicate';
+  if(r.status===409){ let t=''; try{ t=await r.text(); }catch(e){} return /number_key/.test(t)?'taken':'duplicate'; }
   if(!r.ok) throw new Error('supabase '+r.status);
   return 'ok';
 }
@@ -303,9 +307,10 @@ form.addEventListener('submit',async e=>{
   const bot=$('#company').value.trim()!=='';
   btn.disabled=true; const label=btn.textContent; btn.textContent='Sending…';
   try{
-    if(!bot){ await save(row); if(window.altuzTrack) window.altuzTrack('admission'); }
+    let res='ok';
+    if(!bot){ res=await save(row); if(res==='taken'){ await loadTaken(); btn.disabled=false; btn.textContent=label; err.textContent='That number was just taken. We moved you to the nearest free one; check it and send again.'; return; } if(window.altuzTrack) window.altuzTrack('admission'); }
     $('#cRank').textContent='Pending';
-    $('#admBody').innerHTML='<div class="done" role="status"><h2 class="x-wide" id="h-admission" tabindex="-1">Request received.</h2><p class="p">We read every request. Before pre-sale opens we’ll write to tell you whether you’re in, and your number will be waiting.</p><p class="num chrome">'+pad(cur)+'</p><p class="p">That’s the number you asked for. If it’s taken, you choose again before anyone outside the list.</p></div>';
+    $('#admBody').innerHTML='<div class="done" role="status"><h2 class="x-wide" id="h-admission" tabindex="-1">Request received.</h2><p class="p">We read every request. Before pre-sale opens we’ll write to tell you whether you’re in, and your number will be waiting.</p><p class="num chrome">'+pad(cur)+'</p><p class="p">That’s your number, held for you while we review your request.</p></div>';
     const h=$('#h-admission'); if(h) h.focus({preventScroll:true});
   }catch(ex){
     btn.disabled=false; btn.textContent=label;
@@ -316,7 +321,7 @@ form.addEventListener('submit',async e=>{
 /* ---------- intro: headlights at night ---------- */
 const intro=$('#intro'), iwrap=$('#iwrap'), ibloom=$('#ibloom'), ibar=$('#ibar');
 const cones=[$('#cone1'),$('#cone2'),$('#cone3')], spots=[$('#spot1'),$('#spot2'),$('#spot3')];
-const TOKENS=['privileges','code','light','number','admission'];
+const TOKENS=['privileges','code','light','number','admission','glimpse'];
 const REVEAL=4.3, END=5.8;
 let it0=0, iraf=0, started=false, revealed=false;
 /* three lights: two headlights from the lower corners and a short glint from above.

@@ -20,6 +20,9 @@ create table if not exists public.admission_requests (
 
 -- One request per email (case-insensitive). A repeat request returns 409, which the site treats as "received".
 create unique index if not exists admission_requests_email_key on public.admission_requests (lower(email));
+-- A number belongs to the first request that asks for it. Declining a request frees its number.
+create unique index if not exists admission_requests_number_key on public.admission_requests (preferred_number)
+  where preferred_number is not null and status <> 'declined';
 create index if not exists admission_requests_created_idx on public.admission_requests (created_at desc);
 
 alter table public.admission_requests enable row level security;
@@ -41,3 +44,12 @@ create or replace view public.number_demand with (security_invoker = true) as
   group by preferred_number
   order by preferred_number;
 revoke all on public.number_demand from anon, authenticated;
+
+-- The site greys out numbers already asked for. Returns only the numbers, never emails or names.
+create or replace function public.taken_numbers() returns smallint[]
+  language sql stable security definer set search_path = public as $$
+  select coalesce(array_agg(preferred_number order by preferred_number), '{}')
+  from public.admission_requests where preferred_number is not null and status <> 'declined';
+$$;
+revoke all on function public.taken_numbers() from public;
+grant execute on function public.taken_numbers() to anon;
