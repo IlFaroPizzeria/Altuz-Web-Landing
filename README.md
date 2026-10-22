@@ -27,3 +27,5 @@ Static website for Altuz (Drop 001): the headlight entrance, the membership card
 ## Reading the requests
 
 Supabase > Table Editor > `admission_requests`. Change `status` to `admitted` or `declined` as you review. The `number_demand` view shows how many people asked for each number.
+
+Paso a paso en español: `PUBLICAR.md`.
