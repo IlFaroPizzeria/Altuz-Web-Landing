@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://altuz.vercel.app/sitemap.xml
+Sitemap: https://altuz-ten.vercel.app/sitemap.xml

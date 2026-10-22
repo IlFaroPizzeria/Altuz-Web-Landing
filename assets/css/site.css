@@ -555,3 +555,30 @@ noscript p{position:fixed;left:16px;right:16px;bottom:16px;z-index:200;margin:0;
 @media(max-width:820px) and (max-height:860px){.glimpse{margin-top:10px}}
 @media(orientation:landscape) and (max-height:540px){.glimpse{margin-top:8px;padding:6px 14px 6px 8px;font-size:13px}.glimpse i{width:22px;height:22px}.glimpse i::after{left:8px;top:5px;border-left-width:7px;border-top-width:5px;border-bottom-width:5px}.glimpse small{display:none}.capture{max-width:400px}.cap-hint{display:none}.capture{padding-left:7px}}
 @media(orientation:landscape) and (max-height:540px){.gm{display:none}}
+
+/* ---------- ghost mark and slogan: only fragments, only at moments ---------- */
+.ghosts{position:absolute;inset:0;overflow:hidden}
+.gh{position:absolute;opacity:0;color:var(--graphite);mix-blend-mode:multiply;will-change:opacity;
+  -webkit-mask-image:radial-gradient(ellipse 46% 40% at var(--mx,50%) var(--my,50%),#000 0,rgba(0,0,0,.5) 45%,transparent 74%);mask-image:radial-gradient(ellipse 46% 40% at var(--mx,50%) var(--my,50%),#000 0,rgba(0,0,0,.5) 45%,transparent 74%);
+  animation:ghost 26s ease-in-out infinite}
+.gh .logo{width:100%;height:auto;fill:currentColor}
+.gh span{display:block;font-family:var(--display);font-variation-settings:"wdth" 125;font-weight:780;letter-spacing:-.04em;line-height:.9;white-space:nowrap;text-transform:uppercase}
+.g1{width:62vmin;right:-14vmin;top:-12vmin;--mx:30%;--my:70%}
+.g2{left:-6vw;bottom:9vh;font-size:15vw;--mx:78%;--my:55%;animation-delay:-9s}
+.g3{width:34vmin;left:8vw;top:30vh;--mx:60%;--my:30%;animation-delay:-17s}
+.g4{right:-10vw;top:14vh;font-size:11vw;--mx:20%;--my:50%;animation-delay:-22s}
+@keyframes ghost{0%,18%{opacity:0}34%{opacity:.07}46%{opacity:.045}60%,100%{opacity:0}}
+@media(max-width:820px){.g1{width:80vmin;right:-26vmin;top:6vh}.g2{font-size:30vw;left:-10vw;bottom:14vh}.g3{display:none}.g4{font-size:18vw;top:30vh;right:-14vw}}
+@media(prefers-reduced-motion:reduce){.gh{animation:none;opacity:.03}}
+
+/* the glimpse link: quiet, no player look */
+.glimpse{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:10px;margin-top:20px;padding:6px 0;cursor:pointer;color:var(--steel);font:500 14.5px/1 var(--display);letter-spacing:.01em;position:relative;width:max-content;transition:color .6s var(--ease)}
+.glimpse:focus-visible{outline:2px solid var(--graphite);outline-offset:6px;border-radius:6px}
+.glimpse .logo{width:18px;color:var(--graphite);opacity:.55;transition:opacity .6s var(--ease)}
+.glimpse span{position:relative;padding-bottom:5px}
+.glimpse span::after{content:"";position:absolute;left:0;bottom:0;height:1px;width:100%;background:currentColor;opacity:.4;transform-origin:left;transform:scaleX(.35);transition:transform .9s var(--ease),opacity .9s var(--ease)}
+.glimpse:hover{color:var(--graphite)}
+.glimpse:hover .logo{opacity:1}
+.glimpse:hover span::after{transform:scaleX(1);opacity:.8}
+@media(max-width:820px){.glimpse{margin-top:12px;font-size:14px;padding:4px 0}.glimpse .logo{width:16px}}
+@media(orientation:landscape) and (max-height:540px){.glimpse{margin-top:8px;font-size:13px;padding:2px 0}}
