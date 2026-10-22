@@ -205,6 +205,7 @@ $('#alias').addEventListener('input',e=>{ const v=e.target.value.trim()||'Your n
 /* ---------- sheets ---------- */
 let current=null, lastTrigger=null;
 const dockBtns=$$('.dock button');
+$('.dock [data-open="light"]').addEventListener('click',e=>e.currentTarget.classList.add('seen'));
 function openSheet(id,opts={}){
   const el=document.getElementById(id);
   if(!el||!el.classList.contains('sheet')) return;
@@ -321,7 +322,7 @@ form.addEventListener('submit',async e=>{
 /* ---------- intro: headlights at night ---------- */
 const intro=$('#intro'), iwrap=$('#iwrap'), ibloom=$('#ibloom'), ibar=$('#ibar');
 const cones=[$('#cone1'),$('#cone2'),$('#cone3')], spots=[$('#spot1'),$('#spot2'),$('#spot3')];
-const TOKENS=['privileges','code','light','number','admission','glimpse'];
+const TOKENS=['privileges','code','light','number','admission'];
 const REVEAL=4.3, END=5.8;
 let it0=0, iraf=0, started=false, revealed=false;
 /* three lights: two headlights from the lower corners and a short glint from above.
