@@ -157,3 +157,11 @@ body.ready .bar{opacity:1;transform:none}
   #hud .lbl{display:none}#dots{right:8px}
 }
 @media(prefers-reduced-motion:reduce){.grain,#hero .scroll i,.plate small i,.hs i{animation:none}#cap,#hero,#sheet,.bar{transition-duration:.01s}}
+
+/* Shopify theme chrome off: the Atelier is the whole page */
+#header-group,#footer-group,header-component,.header-group,.footer-group,
+.shopify-section-group-header-group,.shopify-section-group-footer-group,
+[id^="shopify-section-group-header"],[id^="shopify-section-group-footer"],
+.announcement-bar,#shopify-pc__banner,.shopify-pc__banner__dialog{display:none!important}
+html,body{margin:0!important;padding:0!important;background:#060708!important;overscroll-behavior-y:none}
+main,#MainContent,.main-content{margin:0!important;padding:0!important;max-width:none!important;background:#060708!important;min-height:0!important}

@@ -58,14 +58,27 @@ HS.teeW=HS.teeB;
 /* ---------- gate ---------- */
 const idIn=$('#idIn'), gErr=$('#gErr');
 const validId=s=>/^\d{8}[A-Z]$/.test(s)&&LET[parseInt(s.slice(0,8),10)%23]===s[8];
-$('#gateForm').addEventListener('submit',e=>{
-  e.preventDefault(); gErr.textContent='';
+let MEMBER={n:1,rank:'Founder',name:''};
+const loadCfg=()=>new Promise(res=>{ if(window.ALTUZ_CONFIG) return res(window.ALTUZ_CONFIG); const s=document.createElement('script'); s.src='https://altuz-ten.vercel.app/assets/js/config.js'; s.onload=()=>res(window.ALTUZ_CONFIG||null); s.onerror=()=>res(null); document.head.appendChild(s); });
+async function lookup(id){
+  if(id===SAMPLE&&!SHOP) return {number:1,rank:'Founder'};
+  const C=await loadCfg(); const url=((C&&C.supabaseUrl)||'').replace(/\/+$/,''), key=(C&&C.supabaseAnonKey)||''; if(!url||!key) throw new Error('cfg');
+  const h={'apikey':key,'Content-Type':'application/json'}; if(!/^sb_/.test(key)) h.Authorization='Bearer '+key;
+  const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(),9000);
+  try{ const r=await fetch(url+'/rest/v1/rpc/atelier_lookup',{method:'POST',headers:h,body:JSON.stringify({p_dni:id}),signal:ctl.signal}); if(!r.ok) throw new Error('http '+r.status); const d=await r.json(); const row=Array.isArray(d)?d[0]:d; return row&&row.number?row:null; } finally{ clearTimeout(to); }
+}
+let busy=false;
+$('#gateForm').addEventListener('submit',async e=>{
+  e.preventDefault(); if(busy) return; gErr.textContent='';
   const v=idIn.value.trim().toUpperCase().replace(/^#/,'');
   if(!/^\d{8}[A-Z]$/.test(v)){ gErr.textContent='An ID is eight digits and a letter, like 00000000T.'; idIn.focus(); return; }
   if(!validId(v)){ gErr.textContent='That ID doesn’t check out. Look again at your card.'; idIn.focus(); return; }
-  login(v);
+  const btn=$('#gateForm button[type=submit]'), lab=btn.textContent; busy=true; btn.disabled=true; btn.textContent='Checking…';
+  try{ const row=await lookup(v); if(!row){ gErr.textContent='No member with that ID.'; idIn.focus(); } else login(v,row); }
+  catch(x){ gErr.textContent='We couldn’t reach the Registry. Try again in a moment.'; }
+  busy=false; btn.disabled=false; btn.textContent=lab;
 });
-if(SHOP&&SHOP.hideSample){ const u=$('#useSample'); if(u) u.remove(); }
+if(SHOP){ const u=$('#useSample'); if(u) u.remove(); const fp=$('.fineprint'); if(fp) fp.textContent='Your ID is checked against the Registry. Only members can enter.'; }
 if($('#useSample')) $('#useSample').addEventListener('click',()=>{ idIn.value=SAMPLE; $('#gateForm').requestSubmit?$('#gateForm').requestSubmit():login(SAMPLE); });
 setTimeout(()=>{ try{idIn.focus({preventScroll:true})}catch(e){} },300);
 
@@ -79,7 +92,7 @@ const variantOf=(k)=>SHOP&&SHOP.products&&SHOP.products[k]?SHOP.products[k].vari
 function priceTag(k){ const P=SHOP&&SHOP.products&&SHOP.products[k]; if(!P) return ''; const v=P.variants[sizes[k]]||Object.values(P.variants)[0]; return v?'<span class="pr" style="display:block;margin-top:4px;font:500 13px/1 var(--mark);letter-spacing:.12em;color:var(--steel)">'+money(v.price)+'</span>':''; }
 function refreshPrices(){ $$('.pc').forEach(c=>{ const k=c.dataset.k; const v=variantOf(k); const pr=$('.pr',c); if(pr&&v) pr.textContent=money(v.price)+(v.available?'':' · sold out'); }); }
 async function checkout(list,msg,btn){
-  const items=list.map(p=>{ const v=variantOf(p.key); return v&&v.available?{id:v.id,quantity:1,properties:{'Member ID':myId,'Piece':p.code,'Size':sizes[p.key]}}:null; });
+  const items=list.map(p=>{ const v=variantOf(p.key); return v&&v.available?{id:v.id,quantity:1,properties:{'Member ID':myId,'Number':MEMBER.n+' / 100','Piece':p.code,'Size':sizes[p.key]}}:null; });
   if(items.some(x=>!x)){ msg.textContent='One of the pieces in that size is sold out. Choose another size.'; return; }
   btn.disabled=true; btn.textContent='One moment…'; msg.textContent='';
   try{
@@ -91,13 +104,21 @@ async function checkout(list,msg,btn){
 }
 const sizes={teeB:'M',teeW:'M',short:'M'}, picked={teeB:false,teeW:false,short:false};
 
-function login(id){
-  myId=id; $$('[data-id]').forEach(e=>e.textContent=id);
-  $('#rank').textContent=id===SAMPLE?'Founder':'Origin';
+const NUMRE=/\b\d{1,3} ?\/ ?100\b/g;
+function stamp(o){ if(typeof o==='string') return o.replace(NUMRE,MEMBER.n+' / 100'); if(Array.isArray(o)){ for(let i=0;i<o.length;i++) o[i]=stamp(o[i]); return o; } if(o&&typeof o==='object'){ for(const k in o) o[k]=stamp(o[k]); } return o; }
+function login(id,row){
+  myId=id; MEMBER={n:Math.max(1,Math.min(100,parseInt(row&&row.number,10)||1)),rank:(row&&row.rank)||'Origin',name:String((row&&row.alias)||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,40)};
+  $$('[data-id]').forEach(e=>e.textContent=id);
+  $('#rank').textContent=(MEMBER.name?MEMBER.name+' · ':'')+MEMBER.rank+' · No. '+MEMBER.n+' / 100';
+  const he=$('#hero .eyebrow'); if(he) he.textContent=(MEMBER.name?'Welcome back, '+MEMBER.name:'Welcome back')+' · No. '+MEMBER.n+' / 100';
+  stamp(CH); stamp(HS); stamp(SPEC);
+  const changed=window.ALTUZ&&ALTUZ.n!==MEMBER.n; if(window.ALTUZ&&ALTUZ.setNumber&&changed) ALTUZ.setNumber(MEMBER.n);
   $('#gate').classList.add('out'); $('#app').classList.add('on');
   try{ document.body.classList.add('lock'); }catch(e){}
-  buildStory(); initGL(); intro();
+  SPS=[]; lastCi=-1; buildStory(); requestAnimationFrame(measure); initGL(); if(glOK&&changed&&builtN&&builtN!==MEMBER.n) rebuildGarments(); intro();
 }
+let builtN=0;
+function rebuildGarments(){ try{ Object.values(garments).forEach(g=>scene.remove(g)); garments=buildGarments(); builtN=MEMBER.n; }catch(e){ console.warn(e); } }
 
 function buildStory(){
   const st=$('#story'); st.innerHTML='';
@@ -120,7 +141,7 @@ function buildStory(){
 }
 setTimeout(refreshPrices,0);
 function logout(){
-  started=false; introDone=false; clearTimeout(capTimer); capKey=''; state.ch=0;
+  started=false; introDone=false; clearTimeout(capTimer); capKey=''; REV.clear(); enterKey=''; state.ch=0;
   document.body.classList.remove('ready','lock'); $('#app').classList.remove('on');
   const it=$('#intro'); it.style.display='none'; it.classList.remove('on','off'); $('#skip').hidden=true;
   ['hero','cap','sheet','outfit','finalBar'].forEach(id=>$('#'+id).classList.remove('on'));
@@ -139,7 +160,7 @@ function openModal(){
   const total=list.reduce((n,p)=>{ const v=variantOf(p.key); return n+(v?v.price:0); },0);
   const m=document.createElement('div'); m.id='modal'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-labelledby','mH');
   const rows=list.map(p=>{ const v=variantOf(p.key); return '<li><b>'+p.name+' · '+p.colour+'</b><span>Size '+sizes[p.key]+(v?' · '+money(v.price):'')+'</span></li>'; }).join('');
-  m.innerHTML='<div class="box"><span class="eyebrow">'+(live?'Your order':'Reservation · preview')+'</span><h3 class="wide chrome" id="mH">'+(list.length?(live?'Held for '+myId+'.':'Reserved to '+myId+'.'):'Nothing chosen yet.')+'</h3>'
+  m.innerHTML='<div class="box"><span class="eyebrow">'+(live?'Your order':'Reservation · preview')+'</span><h3 class="wide chrome" id="mH">'+(list.length?(live?'Held for '+(MEMBER.name?MEMBER.name+' · ':'')+myId+'.':'Reserved to '+myId+'.'):'Nothing chosen yet.')+'</h3>'
    +(list.length?'<p>'+(live?'Each piece is numbered in silver foil and written against your ID. Your ID travels with the order.':'Nothing has been charged or sent: this is a preview of the members’ shop (sample ID).')+'</p><ul>'+rows+'</ul>'+(live&&total?'<p style="font:500 15px/1.4 var(--mark);letter-spacing:.1em">Total · '+money(total)+'</p>':''):'<p>Choose a size and add the pieces you want. They are linked to your ID, ready for pre-sale.</p>')
    +'<p id="mMsg" role="alert" style="color:#e9a3a3;min-height:1.4em"></p>'
    +(live&&list.length?'<button class="btn" type="button" id="mGo">Continue to checkout</button> ':'')+'<button class="btn ghost" type="button" id="mClose">'+(list.length?'Close':'Back to the atelier')+'</button></div>';
@@ -210,7 +231,7 @@ function teeDraw(S,white){ return (A,mode,pal)=>{ const x=A.x,c=A.col;
   x.save(); x.translate(A.X(Math.PI),A.Y(6.5)); x.fillStyle=mode==='c'?(white?'#2a2d31':pal.wh):c.wh; fitText(x,'RUN ELEVATED.',30*A.hpx(S,6.5,Math.PI),2.1*A.vpx,'700 100px Archivo, Arial, sans-serif'); x.restore();
   // labels
   const label=(th,y,wc,hc,txt)=>{ x.save(); x.fillStyle=c.lab; const px=A.X(th),py=A.Y(y),w=wc*A.hpx(S,y,th),h=hc*A.vpx; x.fillRect(px-w/2,py-h/2,w,h); if(mode==='c'){ x.fillStyle='#d9dde2'; x.translate(px,py+h*.28); fitText(x,txt,w*.62,h*.2,'700 100px Archivo, Arial, sans-serif'); x.restore(); x.save(); x.fillStyle='#d9dde2'; logoAt(x,px,py-h*.22,w*.28,h*.22); } x.restore(); };
-  label(Math.PI,67,4,3,'001/100'); label(-44*Math.PI/180,7.25,4.5,4.5,'001/100');
+  const NUMT=(window.ALTUZ&&ALTUZ.num)||'001/100'; label(Math.PI,67,4,3,NUMT); label(-44*Math.PI/180,7.25,4.5,4.5,NUMT);
 }; }
 function shortPelDraw(S){ return (A,mode,pal)=>{ const x=A.x,c=A.col;
   // waist mesh band
@@ -233,7 +254,7 @@ function makeMats(draw,spec,pal,bump,pw){
   m.userData.pw=pw; return m;
 }
 function buildGarments(){
-  const reg={}; const h=narrow()?.62:.5;
+  const reg={}; const h=narrow()?.78:((navigator.hardwareConcurrency||4)>=8?.58:.66);
   [['teeB',false],['teeW',true],['short',null]].forEach(([k])=>{ const g=new THREE.Group(); g.scale.setScalar(.1); g.position.y=k==='short'?1.4:-3.5; g.userData={}; g.visible=k==='teeB'; reg[k]=g; scene.add(g); });
   const queue=['teeB','short','teeW']; let i=0;
   const next=()=>{ if(i>=queue.length) return; const k=queue[i++]; setTimeout(()=>{ try{ const sz=sizes[k]; const m=k==='short'?ALTUZ.buildShort(sz,{h}):ALTUZ.buildTee(sz,{white:k==='teeW',h}); const inner=m.group; inner.position.y=k==='short'?0:70; reg[k].add(inner); reg[k].userData.probe=inner.userData.probe; reg[k].userData.oy=inner.position.y; reg[k].userData.ready=true; }catch(e){ console.warn('garment build failed',k,e); } next(); },80); };
@@ -247,8 +268,8 @@ function initGL(){
   if(glOK) return;
   try{
     if(!window.THREE) throw 0;
-    const cv=$('#gl'); renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:false,powerPreference:'high-performance'});
-    renderer.setPixelRatio(Math.min(devicePixelRatio||1,2)); renderer.outputEncoding=THREE.sRGBEncoding; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05; renderer.setClearColor(0x060708,1);
+    const cv=$('#gl'); renderer=new THREE.WebGLRenderer({canvas:cv,antialias:!narrow(),alpha:false,powerPreference:'high-performance'});
+    renderer.setPixelRatio(Math.min(devicePixelRatio||1,narrow()?1.5:2)); renderer.outputEncoding=THREE.sRGBEncoding; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05; renderer.setClearColor(0x060708,1);
     scene=new THREE.Scene(); scene.fog=new THREE.FogExp2(0x060708,.008);
     camera=new THREE.PerspectiveCamera(30,1,.1,120);
     const pm=new THREE.PMREMGenerator(renderer); scene.environment=pm.fromEquirectangular(envTex()).texture;
@@ -258,7 +279,7 @@ function initGL(){
     // floor pool of light
     const fc=document.createElement('canvas'); fc.width=fc.height=256; const fx=fc.getContext('2d'); const gr=fx.createRadialGradient(128,128,4,128,128,128); gr.addColorStop(0,'rgba(210,222,240,.30)'); gr.addColorStop(.45,'rgba(120,135,160,.10)'); gr.addColorStop(1,'rgba(0,0,0,0)'); fx.fillStyle=gr; fx.fillRect(0,0,256,256);
     const floor=new THREE.Mesh(new THREE.PlaneGeometry(26,26),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(fc),transparent:true,depthWrite:false})); floor.rotation.x=-Math.PI/2; floor.position.y=-4.6; scene.add(floor); scene.userData.floor=floor;
-    garments=buildGarments(); glOK=true; resize(); addEventListener('resize',resize);
+    garments=buildGarments(); builtN=MEMBER.n; glOK=true; resize(); addEventListener('resize',resize);
     bindDrag(cv); requestAnimationFrame(loop);
   }catch(e){ $('#nogl').style.display='grid'; console.warn('3D unavailable',e); glOK=false; requestAnimationFrame(loop); }
 }
@@ -270,9 +291,20 @@ function bindDrag(cv){
 
 /* ---------- scroll → state ---------- */
 let sY=0, introDone=false;
+let SPS=[], SPT=[], SPH=[], DOCH=1, DOTS=[], lastCi=-1, lastYaw=-1, lastProg=-1;
+function measure(){ SPS=$$('.sp'); SPT=SPS.map(s=>s.offsetTop); SPH=SPS.map(s=>s.offsetHeight); DOCH=Math.max(1,document.documentElement.scrollHeight-innerHeight); DOTS=$$('#dots button'); BEATS=[]; CH.forEach((c,ci)=>{ const N=c.beats.length, top=SPT[ci]-innerHeight*.35, span=Math.max(1,SPH[ci]-innerHeight*.35); for(let i=0;i<N;i++) BEATS.push({key:ci+':'+i,y:top+(i/N)*span}); }); }
+let BEATS=[]; const REV=new Set(); let enterT=0, enterKey='';
+function hsReady(ci,bi){ const c=CH[ci], b=c.beats[bi]; return (b.hs||[]).every(h=>{ const el=hsEls[(c.g==='teeW'?'teeB':c.g)+':'+h]; if(!el) return true; if(getComputedStyle(el).display==='none') return true; return el.style.opacity!=='0'&&el.classList.contains('on'); }); }
+function gate(now){
+  if(!introDone||!BEATS.length) return; let fu=-1; for(let i=0;i<BEATS.length;i++){ if(!REV.has(BEATS[i].key)){ fu=i; break; } }
+  if(fu<0) return;
+  if(enterKey===BEATS[fu].key&&!REV.has(enterKey)){ const [ci,bi]=enterKey.split(':').map(Number); if(now-enterT>(RM?400:1500)&&hsReady(ci,bi)) REV.add(enterKey); }
+  if(fu>=BEATS.length-1||REV.has(BEATS[fu].key)) return; const lim=BEATS[fu+1].y-3; if(scrollY>lim) scrollTo(0,lim); }
+addEventListener('resize',()=>{ measure(); });
 function read(){
-  const sps=$$('.sp'); const y=scrollY; let ci=0; sps.forEach((s,i)=>{ if(y>=s.offsetTop-innerHeight*.35) ci=i; });
-  const s=sps[ci]; const span=Math.max(1,s.offsetHeight-innerHeight*.35); const p=clamp((y-(s.offsetTop-innerHeight*.35))/span,0,.9999);
+  if(!SPS.length) measure();
+  const y=scrollY; let ci=0; for(let i=0;i<SPT.length;i++){ if(y>=SPT[i]-innerHeight*.35) ci=i; }
+  const span=Math.max(1,SPH[ci]-innerHeight*.35); const p=clamp((y-(SPT[ci]-innerHeight*.35))/span,0,.9999);
   return {ci,p};
 }
 function targetShot(ci,p){
@@ -284,7 +316,7 @@ function targetShot(ci,p){
 const wpos=(g,v)=>{ const G=garments[g]; return new THREE.Vector3(G.position.x+v[0]*.1,G.position.y+v[1]*.1,G.position.z+v[2]*.1); };
 let capKey='',capTimer=0;
 function setCaption(ci,bi){
-  const key=ci+':'+bi; if(key===capKey) return; capKey=key; const c=CH[ci], b=c.beats[bi]; const cap=$('#cap'), sheet=$('#sheet'), hero=$('#hero'), of=$('#outfit'), fb=$('#finalBar');
+  const key=ci+':'+bi; if(key===capKey) return; capKey=key; enterKey=key; enterT=performance.now(); const c=CH[ci], b=c.beats[bi]; const cap=$('#cap'), sheet=$('#sheet'), hero=$('#hero'), of=$('#outfit'), fb=$('#finalBar');
   cap.classList.remove('on'); sheet.classList.remove('on'); hero.classList.toggle('on',!!b.hero&&introDone); of.classList.toggle('on',!!b.final); fb.classList.toggle('on',!!b.final);
   if(!RM&&ci>0) $('#flare').classList.remove('go'),void $('#flare').offsetWidth,$('#flare').classList.add('go'); flash=1;
   $$('.hs').forEach(h=>h.classList.remove('on'));
@@ -305,8 +337,8 @@ function loop(now){
   if(!started) return;
   const {ci,p}=read(); const sh=targetShot(ci,p);
   if(state.ch!==ci){ if(glOK) showGarments(ci); state.ch=ci; }
-  setCaption(ci,sh.beat);
-  $$('#dots button').forEach((d,i)=>d.classList.toggle('on',i===ci));
+  setCaption(ci,sh.beat); gate(now);
+  if(ci!==lastCi){ lastCi=ci; DOTS.forEach((d,i)=>d.classList.toggle('on',i===ci)); }
   if(!glOK) return;
   const k=RM?1:1-Math.exp(-dt*3.4);
   cam.az=lerp(cam.az,sh.az,k); cam.el=lerp(cam.el,sh.el,k); cam.d=lerp(cam.d,sh.d,k); cam.fov=lerp(cam.fov,sh.fov,k); cam.sx=lerp(cam.sx,sh.sx,k); cam.sy=lerp(cam.sy,sh.sy,k);
@@ -317,7 +349,7 @@ function loop(now){
   if(now-lastDrag>1800) yawDrag*=Math.exp(-dt*1.6);
   flash=Math.max(0,flash-dt*.9);
   Object.keys(garments).forEach(key=>{ const G=garments[key]; const want=tAppear[key]; G.userData.s=lerp(G.userData.s??(key==='teeB'?1:0),want,RM?1:1-Math.exp(-dt*5)); const s=G.userData.s; G.visible=s>.02; G.scale.setScalar(.1*(.9+.1*s)); const tx=G.userData.tx||0; G.position.x=lerp(G.position.x,tx,1-Math.exp(-dt*3)); G.rotation.y=(CH[ci].g==='all'?Math.sin(now/2600+key.length*1.7)*.42:0)+yawDrag*(CH[ci].g===key?1:0); G.position.y=(key==='short'?1.4:-3.5)+(RM?0:Math.sin(now/1900+key.length)*.05);
-    G.traverse(o=>{ if(o.material&&o.material.userData&&o.material.userData.retro){ o.material.emissiveIntensity=.06+flash*1.6+ (Math.sin(now/1700)*.5+.5)*.12; } }); });
+    if(G.visible){ if(!G.userData.rm||G.userData.rmN!==G.children.length){ const L=[]; G.traverse(o=>{ if(o.material&&o.material.userData&&o.material.userData.retro) L.push(o.material); }); G.userData.rm=L; G.userData.rmN=G.children.length; } const ei=.06+flash*1.6+(Math.sin(now/1700)*.5+.5)*.12; G.userData.rm.forEach(m=>{ m.emissiveIntensity=ei; }); } });
   // hotspots
   const bi=sh.beat, b=CH[ci].beats[bi];
   Object.entries(hsEls).forEach(([id,el])=>{ if(!el.classList.contains('on')) return; const [g,h]=id.split(':'); const def=HS[g][h]; const G=garments[CH[ci].g==='teeW'?'teeW':g]; if(!G||!G.visible){ el.style.opacity=0; return; }
@@ -325,9 +357,8 @@ function loop(now){
     const w=v.clone().multiplyScalar(.1).applyMatrix4(new THREE.Matrix4().makeRotationY(G.rotation.y)).add(G.position); w.project(camera); const px=(w.x*.5+.5)*W, py=(-w.y*.5+.5)*H;
     const vis=w.z<1&&px>20&&px<W-20&&py>60&&py<H-20; el.style.transform='translate('+px+'px,'+py+'px)'; el.style.opacity=vis?'':0; el.classList.toggle('flip',px>W*.6); });
   // hud
-  const yaw=((cam.az%360)+360)%360; $('#yaw').textContent=String(Math.round(yaw)).padStart(3,'0')+'°'; $('#needle').style.transform='rotate('+yaw+'deg)';
-  $('#progress').style.transform='scaleX('+clamp(scrollY/(document.documentElement.scrollHeight-innerHeight),0,1)+')';
-  $$('#dots button').forEach((d,i)=>d.classList.toggle('on',i===ci));
+  const yaw=((cam.az%360)+360)%360, yr=Math.round(yaw); if(yr!==lastYaw){ lastYaw=yr; $('#yaw').textContent=String(yr).padStart(3,'0')+'°'; $('#needle').style.transform='rotate('+yaw+'deg)'; }
+  const pr=Math.round(clamp(scrollY/DOCH,0,1)*500)/500; if(pr!==lastProg){ lastProg=pr; $('#progress').style.transform='scaleX('+pr+')'; }
   renderer.render(scene,camera);
 }
 
@@ -345,8 +376,8 @@ function intro(){
   cam.d=30; cam.az=-90; showGarments(0);
   $('#skip').onclick=finishIntro;
   const l1=$('.line1',it), l2=$('.line2',it), big=$('.idbig',it); big.style.opacity=0;
-  if(RM){ l1.textContent='Identity confirmed'; big.style.opacity=1; big.textContent=myId; l2.textContent='Drop 001 · Members’ Atelier'; setTimeout(finishIntro,1200); return; }
-  setTimeout(()=>{ l1.textContent='Identity confirmed'; },700);
+  if(RM){ l1.textContent=MEMBER.name?('Identity confirmed · '+MEMBER.name):'Identity confirmed'; big.style.opacity=1; big.textContent=myId; l2.textContent='Drop 001 · Members’ Atelier'; setTimeout(finishIntro,1200); return; }
+  setTimeout(()=>{ l1.textContent=MEMBER.name?('Identity confirmed · '+MEMBER.name):'Identity confirmed'; },700);
   setTimeout(()=>{ big.style.transition='opacity 1s'; big.style.opacity=1; rollId(big,myId,1700); },1500);
   setTimeout(()=>{ l2.textContent='Drop 001 · Members’ Atelier'; },3600);
   setTimeout(finishIntro,6000);
