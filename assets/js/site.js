@@ -271,7 +271,7 @@ $('#faro').addEventListener('click',()=>{
 });
 
 /* ---------- random ID (assigned by Supabase; the page only previews) ---------- */
-const odo=$('#odo'), numCta=$('#numCta'), cBig=$('#cBig'), dniF=$('#dni'), cRank=$('#cRank');
+const odo=$('#odo'), numCta=$('#numCta'), cId=$('#cId'), dniF=$('#dni');
 let cur=1, myId='12345678Z', drawn=false;
 const LET='TRWAGMYFPDXBNJZSQVHLCKE';
 function mkId(){ const n=Math.floor(Math.random()*1e8); return String(n).padStart(8,'0')+LET[n%23]; }
@@ -283,7 +283,7 @@ function rollText(els,final){
   requestAnimationFrame(step);
 }
 const rankOf=n=>n<=2?'Founder':'Origin';
-function setId(id,n){ myId=id; if(n) cur=n; cRank.textContent=rankOf(cur); rollText([cBig,odo],id); if(dniF) dniF.value=id; }
+function setId(id,n){ myId=id; if(n) cur=n; rollText([cId,odo],id); if(dniF) dniF.value=id; }
 function draw(){ if(drawn) return; drawn=true; cur=3; setId(mkId(),3); }
 numCta.addEventListener('click',draw);
 
