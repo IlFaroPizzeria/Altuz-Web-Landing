@@ -25,7 +25,7 @@
 <meta name="twitter:description" content="Altuz is a private society of runners. Numbered, reflective pieces, released only to members. Drop 001 admits a hundred.">
 <meta name="twitter:image" content="https://altuz-ten.vercel.app/assets/img/og.jpg">
 <link rel="preload" href="/assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=8">
+<link rel="stylesheet" href="/assets/css/site.css?v=9">
 <script src="/assets/js/boot.js"></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Organization", "name": "Altuz", "url": "https://altuz-ten.vercel.app", "logo": "https://altuz-ten.vercel.app/assets/img/icon-512.png", "email": "projectaltuz@gmail.com", "slogan": "Run elevated", "founder": [{"@type": "Person", "name": "Nils Lehmann Podadera"}, {"@type": "Person", "name": "Álvaro Castejón Arregui"}]}</script>
 </head>
@@ -55,7 +55,7 @@
   <div class="copy">
     <h1 class="x-wide rv">Membership, worn.</h1>
     <p class="lede rv" style="--d:.2s">Altuz is a private society of runners. Its tees and race shorts are numbered, reflective and released only to members. Wearing one means you were let in.</p>
-    <div class="capture glass rv" id="capture" style="--d:.35s"><span class="cap-hint">Numbers 001 – 100</span><button class="dark" type="button" data-open="number"><span class="lg">Draw your number</span><span class="sm">Draw yours</span></button></div>
+    <div class="capture glass rv" id="capture" style="--d:.35s"><span class="cap-hint">Drop 001 · 100 members</span><button class="dark" type="button" data-open="number"><span class="lg">Get your ID</span><span class="sm">Get yours</span></button></div>
     <p class="meta rv" style="--d:.5s"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><span>Drop 001 admits a hundred members. Requests close at pre-sale, in January 2027.</span></p>
   </div>
   <div class="cardzone rv" style="--d:.15s">
@@ -65,9 +65,9 @@
           <span class="face front">
             <span class="band"></span>
             <span class="sheen"></span><span class="prism"></span>
-            <span class="c-top eng"><svg class="logo c-logo" aria-hidden="true"><use href="#logo"/></svg><span class="c-word">ALTUZ</span><span class="c-no">No. <span id="cNo">001</span></span></span>
-            <span class="c-big" id="cBig">001</span>
-            <span class="c-bot eng"><span><small>ID</small><b id="cId">#00001</b></span><span class="r"><small>Rank</small><b id="cRank">Founder</b></span></span>
+            <span class="c-top eng"><svg class="logo c-logo" aria-hidden="true"><use href="#logo"/></svg><span class="c-word">ALTUZ</span><span class="c-no">Drop 001</span></span>
+            <span class="c-big" id="cBig">12345678Z</span>
+            <span class="c-bot eng"><span><small>Since</small><b>Day one</b></span><span class="r"><small>Rank</small><b id="cRank">Founder</b></span></span>
           </span>
           <span class="face back">
             <span class="stripe"></span>
@@ -95,7 +95,7 @@
   <button type="button" data-open="privileges" aria-controls="privileges" aria-expanded="false">Privileges</button>
   <button type="button" data-open="code" aria-controls="code" aria-expanded="false">The code</button>
   <button type="button" data-open="light" aria-controls="light" aria-expanded="false">The light</button>
-  <button type="button" data-open="number" aria-controls="number" aria-expanded="false">Your number</button>
+  <button type="button" data-open="number" aria-controls="number" aria-expanded="false">Your ID</button>
 </nav>
 
 <div class="scrim" id="scrim" aria-hidden="true"></div>
@@ -179,19 +179,29 @@
 <section class="sheet glass" id="number" role="dialog" aria-modal="false" aria-labelledby="h-number" inert>
   <div class="sheet-top"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><button class="x" type="button" data-close aria-label="Close"></button></div>
   <div class="sheet-body">
-    <h2 class="x-wide pi" id="h-number" tabindex="-1">Your number is drawn.</h2>
-    <p class="p pi" style="--i:1">Numbers 001 to 100 are assigned at random, one per member, never twice. You don’t pick. Alongside it you receive a personal ID, like an identity number: issued once, yours for life.</p>
+    <h2 class="x-wide pi" id="h-number" tabindex="-1">Your ID is drawn.</h2>
+    <p class="p pi" style="--i:1">Every member of Drop 001 receives a personal ID, drawn at random and never issued twice. It works like an identity number: yours for life, printed on your card. Each piece you hold is linked to your ID in the Registry.</p>
     <div class="odo-row pi" style="--i:2">
-      <div class="odo" aria-live="polite"><span class="big chrome" id="odo">001</span><span class="of">/ 100</span></div>
-      <div class="reg panel-row" aria-label="Preview of your card">
-        <span class="k">Card</span><span class="v" id="regNum">No. 001</span>
-        <span class="k">Rank</span><span class="v">Founder</span>
-      </div>
-    </div>
+      <div class="odo" aria-live="polite"><span class="big chrome idbig" id="odo">12345678Z</span></div>
+          </div>
     <div class="num-foot pi" style="--i:4">
-      <button class="dark" type="button" id="numCta" data-open="admission">Draw my number</button>
-      <p>Drawn when you join. It can’t be changed or chosen.</p>
+      <button class="dark" type="button" id="numCta" data-open="admission">Get my ID</button>
+      <p>Drawn when you join. It can’t be changed or chosen. <button class="link" type="button" data-open="registry">Check an ID in the Registry</button></p>
     </div>
+  </div>
+</section>
+
+<section class="sheet glass" id="registry" role="dialog" aria-modal="false" aria-labelledby="h-registry" inert>
+  <div class="sheet-top"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><button class="x" type="button" data-close aria-label="Close"></button></div>
+  <div class="sheet-body">
+    <h2 class="x-wide pi" id="h-registry" tabindex="-1">The Registry.</h2>
+    <p class="p pi" style="--i:1">Every piece is linked to the ID of the member who holds it. Enter an ID to see its rank and its pieces. Names and emails are never shown.</p>
+    <form id="regForm" class="pi" style="--i:2" novalidate>
+      <div class="field"><label for="regId">ID</label><input id="regId" name="regId" type="text" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="12345678Z"></div>
+      <p class="err" id="regErr" role="alert"></p>
+      <div><button class="dark" type="submit">Look up</button></div>
+    </form>
+    <div id="regOut" class="pi" style="--i:3" aria-live="polite"></div>
   </div>
 </section>
 
@@ -199,7 +209,7 @@
   <div class="sheet-top"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><button class="x" type="button" data-close aria-label="Close"></button></div>
   <div class="sheet-body" id="admBody">
     <h2 class="x-wide pi" id="h-admission" tabindex="-1">Request admission.</h2>
-    <p class="p pi" style="--i:1">Drop 001 admits a hundred members. We read every request, and your number and personal ID are drawn at random the moment you send your request.</p>
+    <p class="p pi" style="--i:1">Drop 001 admits a hundred members. We read every request, and your personal ID is drawn at random the moment you send your request.</p>
     <form id="adm-form" class="pi" style="--i:2" novalidate>
       <div class="hp" aria-hidden="true"><label for="company">Company</label><input id="company" name="company" type="text" tabindex="-1" autocomplete="off"></div>
       <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required autocomplete="email" placeholder="you@email.com"></div>
@@ -259,7 +269,7 @@
 </aside>
 <noscript><p>Altuz needs JavaScript for the entrance and the admission form. You can still write to projectaltuz@gmail.com.</p></noscript>
 <script src="/assets/js/config.js?v=4"></script>
-<script src="/assets/js/site.js?v=10"></script>
+<script src="/assets/js/site.js?v=11"></script>
 <script src="/assets/js/consent.js?v=4"></script>
 </body>
 </html>

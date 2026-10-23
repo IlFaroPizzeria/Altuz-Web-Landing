@@ -595,3 +595,9 @@ noscript p{position:fixed;left:16px;right:16px;bottom:16px;z-index:200;margin:0;
 .reel .left{position:absolute;left:0;right:0;bottom:2.4cqw;text-align:center;font:600 clamp(11px,2.5cqw,14px)/1 var(--display);letter-spacing:.14em;color:#c9ced4;font-variant-numeric:tabular-nums}
 .reel .left b{font-weight:700;color:#fff}
 .reel .left span{color:#7d848c}
+
+/* ID on the card and the ID sheet */
+.c-big{font-size:10.6cqw;letter-spacing:.01em;top:30%;font-variation-settings:"wdth" 112}
+.odo .big.idbig{font-size:clamp(34px,5.2vw,64px);letter-spacing:.01em;line-height:1}
+.regrow{display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid rgba(21,23,26,.1);font-size:15px}
+.regrow b{font-weight:650}.regrow span{color:var(--steel);font-variant-numeric:tabular-nums}

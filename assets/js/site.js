@@ -270,27 +270,38 @@ $('#faro').addEventListener('click',()=>{
   if(RM){ const r=row.getBoundingClientRect(); L.x=r.left+r.width*.5; L.y=r.top+r.height*.4; paintLight(0); }
 });
 
-/* ---------- random number + ID (assigned by Supabase; the page only previews) ---------- */
-const odo=$('#odo'), regNum=$('#regNum'), numCta=$('#numCta'), cNo=$('#cNo'), cBig=$('#cBig'), cId=$('#cId'), dniF=$('#dni');
-let cur=1, shown=1, tw=0, myId='#00001', drawn=false;
+/* ---------- random ID (assigned by Supabase; the page only previews) ---------- */
+const odo=$('#odo'), numCta=$('#numCta'), cBig=$('#cBig'), dniF=$('#dni'), cRank=$('#cRank');
+let cur=1, myId='12345678Z', drawn=false;
 const LET='TRWAGMYFPDXBNJZSQVHLCKE';
-function mkId(){ const n=Math.floor(Math.random()*1e8); return '#'+String(n).padStart(8,'0')+LET[n%23]; }
-function rollText(el,final){
-  if(RM){ el.textContent=final; return; }
-  const t0=performance.now(), d=1100;
-  const step=now=>{ const p=clamp((now-t0)/d,0,1); let o=''; for(let i=0;i<final.length;i++){ const ch=final[i]; o+=(i===0||p>(i+1)/(final.length+1))?ch:(/[0-9]/.test(ch)?Math.floor(Math.random()*10):LET[Math.floor(Math.random()*23)]); } el.textContent=o; if(p<1) requestAnimationFrame(step); else el.textContent=final; };
+function mkId(){ const n=Math.floor(Math.random()*1e8); return String(n).padStart(8,'0')+LET[n%23]; }
+function rollText(els,final){
+  const set=t=>els.forEach(e=>{ if(e) e.textContent=t; });
+  if(RM){ set(final); return; }
+  const t0=performance.now(), d=1300;
+  const step=now=>{ const p=clamp((now-t0)/d,0,1); let o=''; for(let i=0;i<final.length;i++){ const ch=final[i]; o+=(p>(i+1)/(final.length+1))?ch:(i===8?LET[Math.floor(Math.random()*23)]:Math.floor(Math.random()*10)); } set(p<1?o:final); if(p<1) requestAnimationFrame(step); };
   requestAnimationFrame(step);
 }
-const cRank=$('#cRank'); const rankOf=n=>n<=2?'Founder':'Origin';
-function setNum(n,id){
-  cur=n; cRank.textContent=rankOf(n); regNum.textContent='No. '+pad(n); cNo.textContent=pad(n);
-  if(id){ myId=id; rollText(cId,id); if(dniF) dniF.value=id; }
-  const t0=performance.now(), d=RM?1:1100; cancelAnimationFrame(tw);
-  const step=now=>{ const p=clamp((now-t0)/d,0,1); odo.textContent=p<1?pad(1+Math.floor(Math.random()*100)):pad(n); cBig.textContent=odo.textContent; if(p<1) tw=requestAnimationFrame(step); };
-  tw=requestAnimationFrame(step);
-}
-function draw(){ if(drawn) return; drawn=true; setNum(1+Math.floor(Math.random()*100),mkId()); }
+const rankOf=n=>n<=2?'Founder':'Origin';
+function setId(id,n){ myId=id; if(n) cur=n; cRank.textContent=rankOf(cur); rollText([cBig,odo],id); if(dniF) dniF.value=id; }
+function draw(){ if(drawn) return; drawn=true; cur=3; setId(mkId(),3); }
 numCta.addEventListener('click',draw);
+
+/* ---------- registry lookup ---------- */
+const rcfg=()=>{ const C=window.ALTUZ_CONFIG||{}; const url=(C.supabaseUrl||'').replace(/\/+$/,''), key=C.supabaseAnonKey||''; const h={'apikey':key,'Content-Type':'application/json'}; if(!/^sb_/.test(key)) h.Authorization='Bearer '+key; return {url,key,h}; };
+$('#regForm').addEventListener('submit',async e=>{
+  e.preventDefault(); const er=$('#regErr'), out=$('#regOut'); er.textContent=''; out.textContent='';
+  const id=$('#regId').value.trim().toUpperCase().replace(/^#/,'');
+  if(!/^\d{8}[A-Z]$/.test(id)){ er.textContent='An ID is eight digits and a letter, like 12345678Z.'; return; }
+  const {url,key,h}=rcfg(); if(!url||!key){ er.textContent='The Registry is not available right now.'; return; }
+  try{
+    const r=await fetch(url+'/rest/v1/rpc/registry_lookup',{method:'POST',headers:h,body:JSON.stringify({p_dni:id})}); if(!r.ok) throw 0;
+    const d=await r.json(); const row=Array.isArray(d)?d[0]:d;
+    if(!row||!row.rank){ er.textContent='No member with that ID.'; return; }
+    const pcs=row.pieces||[];
+    out.innerHTML='<div class="regrow"><b>ID '+id+'</b><span>'+row.rank+'</span></div>'+(pcs.length?pcs.map(p=>'<div class="regrow"><b>'+String(p.model).replace(/[<>&]/g,'')+(p.colour?' · '+String(p.colour).replace(/[<>&]/g,''):'')+'</b><span>No. '+String(p.piece_no).padStart(3,'0')+' / 100</span></div>').join(''):'<div class="regrow"><b>No pieces yet</b><span>Drop 001</span></div>');
+  }catch(x){ er.textContent='We couldn’t check the Registry right now.'; }
+});
 
 /* ---------- admission requests ---------- */
 const form=$('#adm-form'), err=$('#err'), btn=$('#submit');
@@ -317,10 +328,10 @@ form.addEventListener('submit',async e=>{
     if(!bot){
       const row=await save(p);
       if(row&&row.full){ btn.disabled=false; btn.textContent=label; err.textContent='All 100 numbers of Drop 001 have been drawn. Write to projectaltuz@gmail.com to join the reserve list.'; return; }
-      if(row&&row.number){ drawn=true; setNum(row.number,row.dni); }
+      if(row&&row.number){ drawn=true; cur=row.number; setId(row.dni.replace(/^#/,''),row.number); }
       if(window.altuzTrack) window.altuzTrack('admission');
     }
-    $('#admBody').innerHTML='<div class="done" role="status"><h2 class="x-wide" id="h-admission" tabindex="-1">Request received.</h2><p class="p">We read every request. Before pre-sale opens we’ll write to tell you whether you’re in, and your number will be waiting.</p><p class="num chrome">'+pad(cur)+'</p><p class="p">Your ID: <b>'+myId+'</b>. Drawn at random, it’s yours for life. Keep it: it’s how you’ll identify yourself to the society.</p></div>';
+    $('#admBody').innerHTML='<div class="done" role="status"><h2 class="x-wide" id="h-admission" tabindex="-1">Request received.</h2><p class="p">We read every request. Before pre-sale opens we’ll write to tell you whether you’re in, and your number will be waiting.</p><p class="num chrome idbig" style="font-size:clamp(34px,5.2vw,64px)">'+myId+'</p><p class="p">That’s your ID. Drawn at random, it’s yours for life. Keep it: it’s how you’ll identify yourself to the society, and how your pieces are linked to you.</p></div>';
     const hh=$('#h-admission'); if(hh) hh.focus({preventScroll:true});
   }catch(ex){
     btn.disabled=false; btn.textContent=label;
@@ -331,7 +342,7 @@ form.addEventListener('submit',async e=>{
 /* ---------- intro: headlights at night ---------- */
 const intro=$('#intro'), iwrap=$('#iwrap'), ibloom=$('#ibloom'), ibar=$('#ibar');
 const cones=[$('#cone1'),$('#cone2'),$('#cone3')], spots=[$('#spot1'),$('#spot2'),$('#spot3')];
-const TOKENS=['privileges','code','light','number','admission'];
+const TOKENS=['privileges','code','light','number','registry','admission'];
 const REVEAL=4.3, END=5.8;
 let it0=0, iraf=0, started=false, revealed=false;
 /* three lights: two headlights from the lower corners and a short glint from above.
