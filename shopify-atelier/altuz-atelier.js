@@ -107,7 +107,7 @@ const sizes={teeB:'M',teeW:'M',short:'M'}, picked={teeB:false,teeW:false,short:f
 const NUMRE=/\b\d{1,3} ?\/ ?100\b/g;
 function stamp(o){ if(typeof o==='string') return o.replace(NUMRE,MEMBER.n+' / 100'); if(Array.isArray(o)){ for(let i=0;i<o.length;i++) o[i]=stamp(o[i]); return o; } if(o&&typeof o==='object'){ for(const k in o) o[k]=stamp(o[k]); } return o; }
 function login(id,row){
-  myId=id; MEMBER={n:Math.max(1,Math.min(100,parseInt(row&&row.number,10)||1)),rank:(row&&row.rank)||'Origin',name:String((row&&row.alias)||'').replace(/[\u0000-\u001f<>]/g,'').trim().slice(0,40)};
+  myId=id; MEMBER={n:Math.max(1,Math.min(100,parseInt(row&&row.number,10)||1)),rank:(row&&row.rank)||'Origin',name:String((row&&row.alias)||'').replace(/[\u0000-\u001f<>&"'`]/g,'').trim().slice(0,40)};
   $$('[data-id]').forEach(e=>e.textContent=id);
   $('#rank').textContent=(MEMBER.name?MEMBER.name+' · ':'')+MEMBER.rank+' · No. '+MEMBER.n+' / 100';
   const he=$('#hero .eyebrow'); if(he) he.textContent=(MEMBER.name?'Welcome back, '+MEMBER.name:'Welcome back')+' · No. '+MEMBER.n+' / 100';
