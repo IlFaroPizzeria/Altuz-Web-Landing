@@ -165,3 +165,4 @@ body.ready .bar{opacity:1;transform:none}
 .announcement-bar,#shopify-pc__banner,.shopify-pc__banner__dialog{display:none!important}
 html,body{margin:0!important;padding:0!important;background:#060708!important;overscroll-behavior-y:none}
 #MainContent,.main-content{margin:0!important;padding:0!important;max-width:none!important;background:#060708!important;min-height:0!important}
+#story{background:transparent!important}

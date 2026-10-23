@@ -82,6 +82,8 @@ $('#gateForm').addEventListener('submit',async e=>{
 if(SHOP){ const u=$('#useSample'); if(u) u.remove(); const fp=$('.fineprint'); if(fp) fp.textContent='Your ID is checked against the Registry. Only members can enter.'; }
 if($('#useSample')) $('#useSample').addEventListener('click',()=>{ idIn.value=SAMPLE; $('#gateForm').requestSubmit?$('#gateForm').requestSubmit():login(SAMPLE); });
 setTimeout(()=>{ try{idIn.focus({preventScroll:true})}catch(e){} },300);
+/* arriving from the Altuz landing: the ID comes in the #hash (never sent to any server) and is checked straight away */
+(function(){ const m=/[#&?]id=(\d{8}[A-Za-z])/.exec(location.hash||''); if(!m) return; try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){} idIn.value=m[1].toUpperCase(); setTimeout(()=>{ const f=$('#gateForm'); if(f.requestSubmit) f.requestSubmit(); },500); })();
 
 /* ---------- app ---------- */
 let renderer,scene,camera,garments={},envReady=false,glOK=false;
@@ -111,6 +113,7 @@ function login(id,row){
   myId=id; MEMBER={n:Math.max(1,Math.min(100,parseInt(row&&row.number,10)||1)),rank:(row&&row.rank)||'Origin',name:String((row&&row.alias)||'').replace(/[\u0000-\u001f<>&"'`]/g,'').trim().slice(0,40)};
   $$('[data-id]').forEach(e=>e.textContent=id);
   $('#rank').textContent=(MEMBER.name?MEMBER.name+' · ':'')+MEMBER.rank+' · No. '+MEMBER.n+' / 100';
+  const ps=$('.plate small'); if(ps){ ps.textContent=''; ps.appendChild(document.createElement('i')); ps.appendChild(document.createTextNode(MEMBER.name?MEMBER.name+' · Member ID':'Member ID')); }
   const he=$('#hero .eyebrow'); if(he) he.textContent=(MEMBER.name?'Welcome back, '+MEMBER.name:'Welcome back')+' · No. '+MEMBER.n+' / 100';
   stamp(CH); stamp(HS); stamp(SPEC);
   const changed=window.ALTUZ&&ALTUZ.n!==MEMBER.n; if(window.ALTUZ&&ALTUZ.setNumber&&changed) ALTUZ.setNumber(MEMBER.n);
@@ -297,9 +300,9 @@ function measure(){ SPS=$$('.sp'); SPT=SPS.map(s=>s.offsetTop); SPH=SPS.map(s=>s
 let BEATS=[]; const REV=new Set(); let enterT=0, enterKey='';
 function hsReady(ci,bi){ const c=CH[ci], b=c.beats[bi]; return (b.hs||[]).every(h=>{ const el=hsEls[(c.g==='teeW'?'teeB':c.g)+':'+h]; if(!el) return true; if(getComputedStyle(el).display==='none') return true; return el.style.opacity!=='0'&&el.classList.contains('on'); }); }
 function gate(now){
-  if(!introDone||!BEATS.length) return; let fu=-1; for(let i=0;i<BEATS.length;i++){ if(!REV.has(BEATS[i].key)){ fu=i; break; } }
+  if(!introDone||!BEATS.length||!glOK) return; let fu=-1; for(let i=0;i<BEATS.length;i++){ if(!REV.has(BEATS[i].key)){ fu=i; break; } }
   if(fu<0) return;
-  if(enterKey===BEATS[fu].key&&!REV.has(enterKey)){ const [ci,bi]=enterKey.split(':').map(Number); if(now-enterT>(RM?400:1500)&&hsReady(ci,bi)) REV.add(enterKey); }
+  if(enterKey===BEATS[fu].key&&!REV.has(enterKey)){ const [ci,bi]=enterKey.split(':').map(Number); const dt=now-enterT; if(RM?dt>400:(dt>3500||(dt>1500&&hsReady(ci,bi)))) REV.add(enterKey); }
   if(fu>=BEATS.length-1||REV.has(BEATS[fu].key)) return; const lim=BEATS[fu+1].y-3; if(scrollY>lim) scrollTo(0,lim); }
 addEventListener('resize',()=>{ measure(); });
 function read(){
