@@ -300,7 +300,7 @@ function measure(){ SPS=$$('.sp'); SPT=SPS.map(s=>s.offsetTop); SPH=SPS.map(s=>s
 let BEATS=[]; const REV=new Set(); let enterT=0, enterKey='';
 function hsReady(ci,bi){ const c=CH[ci], b=c.beats[bi]; return (b.hs||[]).every(h=>{ const el=hsEls[(c.g==='teeW'?'teeB':c.g)+':'+h]; if(!el) return true; if(getComputedStyle(el).display==='none') return true; return el.style.opacity!=='0'&&el.classList.contains('on'); }); }
 function gate(now){
-  if(!introDone||!BEATS.length||!glOK) return; let fu=-1; for(let i=0;i<BEATS.length;i++){ if(!REV.has(BEATS[i].key)){ fu=i; break; } }
+  return; if(!introDone||!BEATS.length||!glOK) return; let fu=-1; for(let i=0;i<BEATS.length;i++){ if(!REV.has(BEATS[i].key)){ fu=i; break; } }
   if(fu<0) return;
   if(enterKey===BEATS[fu].key&&!REV.has(enterKey)){ const [ci,bi]=enterKey.split(':').map(Number); const dt=now-enterT; if(RM?dt>400:(dt>3500||(dt>1500&&hsReady(ci,bi)))) REV.add(enterKey); }
   if(fu>=BEATS.length-1||REV.has(BEATS[fu].key)) return; const lim=BEATS[fu+1].y-3; if(scrollY>lim) scrollTo(0,lim); }

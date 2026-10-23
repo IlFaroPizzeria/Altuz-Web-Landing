@@ -166,3 +166,5 @@ body.ready .bar{opacity:1;transform:none}
 html,body{margin:0!important;padding:0!important;background:#060708!important;overscroll-behavior-y:none}
 #MainContent,.main-content{margin:0!important;padding:0!important;max-width:none!important;background:#060708!important;min-height:0!important}
 #story{background:transparent!important}
+
+html{overflow-y:auto!important;height:auto!important;scroll-behavior:auto!important}body:not(.lock){overflow-y:visible!important;height:auto!important;position:static!important}#story{pointer-events:none}
