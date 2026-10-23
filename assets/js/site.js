@@ -287,6 +287,9 @@ function setId(id,n){ myId=id; if(n) cur=n; rollText([cId,odo],id); if(dniF) dni
 function draw(){ if(drawn) return; drawn=true; cur=3; setId(mkId(),3); }
 numCta.addEventListener('click',draw);
 
+/* ---------- link to the members' Atelier (ID travels in the #hash, never sent to a server) ---------- */
+function atelierLink(id){ const u=String((window.ALTUZ_CONFIG||{}).atelierUrl||'').replace(/#.*$/,''); if(!u||!/^\d{8}[A-Z]$/.test(String(id||''))) return ''; return '<p class="p" style="margin-top:18px"><a class="dark" href="'+u+'#id='+encodeURIComponent(id)+'" rel="noopener">Enter the Atelier</a></p>'; }
+
 /* ---------- registry lookup ---------- */
 const rcfg=()=>{ const C=window.ALTUZ_CONFIG||{}; const url=(C.supabaseUrl||'').replace(/\/+$/,''), key=C.supabaseAnonKey||''; const h={'apikey':key,'Content-Type':'application/json'}; if(!/^sb_/.test(key)) h.Authorization='Bearer '+key; return {url,key,h}; };
 $('#regForm').addEventListener('submit',async e=>{
@@ -299,7 +302,7 @@ $('#regForm').addEventListener('submit',async e=>{
     const d=await r.json(); const row=Array.isArray(d)?d[0]:d;
     if(!row||!row.rank){ er.textContent='No member with that ID.'; return; }
     const pcs=row.pieces||[];
-    out.innerHTML='<div class="regrow"><b>ID '+id+'</b><span>'+row.rank+'</span></div>'+(pcs.length?pcs.map(p=>'<div class="regrow"><b>'+String(p.model).replace(/[<>&]/g,'')+(p.colour?' · '+String(p.colour).replace(/[<>&]/g,''):'')+'</b><span>No. '+String(p.piece_no).padStart(3,'0')+' / 100</span></div>').join(''):'<div class="regrow"><b>No pieces yet</b><span>Drop 001</span></div>');
+    out.innerHTML='<div class="regrow"><b>ID '+id+'</b><span>'+row.rank+'</span></div>'+(pcs.length?pcs.map(p=>'<div class="regrow"><b>'+String(p.model).replace(/[<>&]/g,'')+(p.colour?' · '+String(p.colour).replace(/[<>&]/g,''):'')+'</b><span>No. '+String(p.piece_no).padStart(3,'0')+' / 100</span></div>').join(''):'<div class="regrow"><b>No pieces yet</b><span>Drop 001</span></div>')+atelierLink(id);
   }catch(x){ er.textContent='We couldn’t check the Registry right now.'; }
 });
 
@@ -331,7 +334,7 @@ form.addEventListener('submit',async e=>{
       if(row&&row.number){ drawn=true; cur=row.number; setId(row.dni.replace(/^#/,''),row.number); }
       if(window.altuzTrack) window.altuzTrack('admission');
     }
-    $('#admBody').innerHTML='<div class="done" role="status"><h2 class="x-wide" id="h-admission" tabindex="-1">Request received.</h2><p class="p">We read every request. Before pre-sale opens we’ll write to tell you whether you’re in, and your number will be waiting.</p><p class="num chrome idbig" style="font-size:clamp(34px,5.2vw,64px)">'+myId+'</p><p class="p">That’s your ID. Drawn at random, it’s yours for life. Keep it: it’s how you’ll identify yourself to the society, and how your pieces are linked to you.</p></div>';
+    $('#admBody').innerHTML='<div class="done" role="status"><h2 class="x-wide" id="h-admission" tabindex="-1">Request received.</h2><p class="p">We read every request. Before pre-sale opens we’ll write to tell you whether you’re in, and your number will be waiting.</p><p class="num chrome idbig" style="font-size:clamp(34px,5.2vw,64px)">'+myId+'</p><p class="p">That’s your ID. Drawn at random, it’s yours for life. Keep it: it’s how you’ll identify yourself to the society, and how your pieces are linked to you.</p>'+atelierLink(myId)+'</div>';
     const hh=$('#h-admission'); if(hh) hh.focus({preventScroll:true});
   }catch(ex){
     btn.disabled=false; btn.textContent=label;

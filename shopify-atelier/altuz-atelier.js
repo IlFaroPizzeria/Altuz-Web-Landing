@@ -2,6 +2,7 @@
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v)), lerp=(a,b,t)=>a+(b-a)*t, sm=t=>{t=clamp(t,0,1);return t*t*(3-2*t)};
+['gate','app'].forEach(id=>{ const e=document.getElementById(id); if(e&&e.parentNode!==document.body) document.body.appendChild(e); });
 const SHOP=window.ALTUZ_SHOP||null; const LET='TRWAGMYFPDXBNJZSQVHLCKE', SAMPLE='00000000T';
 const narrow=()=>innerWidth<820;
 let myId=SAMPLE, started=false;
