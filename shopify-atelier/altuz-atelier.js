@@ -268,6 +268,11 @@ function buildGarments(){
 function hsPoint(G,def){ const U=G.userData; if(!U.ready) return null; U.hsc=U.hsc||{}; const key=JSON.stringify(def.p)+'|'+def.th; if(U.hsc[key]) return U.hsc[key].clone(); const oy=U.oy||0, th=def.th*Math.PI/180; let o,d;
   if(def.p.length>1){ const fr=Math.cos(th)>=0?1:-1; o=[def.p[0],def.p[1]-oy,60*fr]; d=[0,0,-fr]; } else { o=[60*Math.sin(th),def.p[0]-oy,60*Math.cos(th)]; d=[-Math.sin(th),0,-Math.cos(th)]; }
   const hit=U.probe(o,d); if(!hit) return null; const v=new THREE.Vector3(hit.p.x+hit.n.x*.9,hit.p.y+hit.n.y*.9+oy,hit.p.z+hit.n.z*.9); U.hsc[key]=v; return v.clone(); }
+function showFlat(){
+  const box=$('#nogl'); if(!box||box.dataset.flat) return; box.dataset.flat=1; box.style.cssText+=';overflow:auto;align-content:start;padding:90px 16px 120px;pointer-events:auto';
+  const n=(MEMBER&&MEMBER.n||1)+' / 100';
+  ['black','white'].forEach(c=>{ fetch('https://altuz-ten.vercel.app/shopify-atelier/mock-tee-'+c+'.svg').then(r=>r.text()).then(t=>{ const d=document.createElement('div'); d.style.cssText='width:min(680px,100%);margin:14px auto'; d.innerHTML=t.replace(/5 \/ 100/g,n); box.appendChild(d); }).catch(()=>{}); });
+}
 function initGL(){
   if(glOK) return;
   try{
@@ -285,7 +290,7 @@ function initGL(){
     const floor=new THREE.Mesh(new THREE.PlaneGeometry(26,26),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(fc),transparent:true,depthWrite:false})); floor.rotation.x=-Math.PI/2; floor.position.y=-4.6; scene.add(floor); scene.userData.floor=floor;
     garments=buildGarments(); builtN=MEMBER.n; glOK=true; resize(); addEventListener('resize',resize);
     bindDrag(cv); requestAnimationFrame(loop);
-  }catch(e){ $('#nogl').style.display='grid'; console.warn('3D unavailable',e); glOK=false; requestAnimationFrame(loop); }
+  }catch(e){ $('#nogl').style.display='grid'; console.warn('3D unavailable',e); showFlat(); glOK=false; requestAnimationFrame(loop); }
 }
 function resize(){ if(!renderer) return; const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
 function bindDrag(cv){
