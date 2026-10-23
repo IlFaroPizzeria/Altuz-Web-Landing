@@ -199,8 +199,8 @@ card.addEventListener('click',()=>{
 });
 
 /* ---------- card bindings ---------- */
-const cName=$('#cName'), cSig=$('#cSig');
-$('#alias').addEventListener('input',e=>{ const v=e.target.value.trim()||'Your name'; cName.textContent=v; cSig.textContent=v; });
+const cSig=$('#cSig');
+$('#alias').addEventListener('input',e=>{ const v=e.target.value.trim()||'Your name'; cSig.textContent=v; });
 
 /* ---------- sheets ---------- */
 let current=null, lastTrigger=null;
@@ -239,6 +239,26 @@ $('#scrim').addEventListener('click',()=>closeSheet());
 $('#home').addEventListener('click',e=>{ e.preventDefault(); closeSheet(); });
 addEventListener('keydown',e=>{ if(e.key==='Escape'&&current&&!html.classList.contains('intro-on')) closeSheet(); });
 
+/* ---------- teaser counter: units run out, faster and faster (a simulation, not real stock) ---------- */
+(function(){
+  const lightSheet=$('#light'), out=$('#reelN'); if(!lightSheet||!out) return;
+  const START=20, LOOP=15000, RUN=13200; let raf=0, t0=0;
+  const paint=n=>{ out.textContent=String(n).padStart(2,'0'); };
+  const tick=now=>{
+    const t=(now-t0)%LOOP, p=Math.min(1,t/RUN);
+    paint(Math.max(0,Math.round(START*(1-Math.pow(p,1.55)))));
+    raf=requestAnimationFrame(tick);
+  };
+  const sync=()=>{
+    const on=lightSheet.classList.contains('open');
+    cancelAnimationFrame(raf); raf=0;
+    if(!on||RM){ paint(START); return; }
+    t0=performance.now(); raf=requestAnimationFrame(tick);
+  };
+  new MutationObserver(sync).observe(lightSheet,{attributes:true,attributeFilter:['class']});
+  paint(START);
+})();
+
 /* ---------- headlight ---------- */
 $('#faro').addEventListener('click',()=>{
   const row=$('#tiles'); const t0=performance.now(), dur=4200; L.tr=300;
@@ -250,51 +270,36 @@ $('#faro').addEventListener('click',()=>{
   if(RM){ const r=row.getBoundingClientRect(); L.x=r.left+r.width*.5; L.y=r.top+r.height*.4; paintLight(0); }
 });
 
-/* ---------- number picker ---------- */
-const pick=$('#pick'), pref=$('#pref'), odo=$('#odo'), regNum=$('#regNum'), numCta=$('#numCta'), cNo=$('#cNo'), cBig=$('#cBig');
-let cur=47, shown=47, tw=0;
-for(let i=1;i<=100;i++){ const b=document.createElement('button'); b.type='button'; b.setAttribute('role','radio'); b.setAttribute('aria-checked',i===cur?'true':'false'); b.setAttribute('aria-label','Number '+i); b.tabIndex=i===cur?0:-1; b.textContent=i; b.dataset.n=i; pick.appendChild(b); }
-function setNum(n,fromInput){
-  n=clamp(Math.round(n)||1,1,100); cur=n;
-  $$('button',pick).forEach(b=>{ const on=+b.dataset.n===n; b.setAttribute('aria-checked',on?'true':'false'); b.tabIndex=on?0:-1; });
-  if(!fromInput) pref.value=n;
-  regNum.textContent='No. '+pad(n); numCta.textContent='Request No. '+pad(n); cNo.textContent=pad(n);
-  const from=shown, t0=performance.now(), d=RM?1:1000; cancelAnimationFrame(tw);
-  const step=now=>{ const p=clamp((now-t0)/d,0,1); shown=from+(n-from)*easeOut(p); const s=pad(Math.round(shown)); odo.textContent=s; cBig.textContent=s; if(p<1) tw=requestAnimationFrame(step); };
+/* ---------- random number + ID (assigned by Supabase; the page only previews) ---------- */
+const odo=$('#odo'), regNum=$('#regNum'), numCta=$('#numCta'), cNo=$('#cNo'), cBig=$('#cBig'), cId=$('#cId'), dniF=$('#dni');
+let cur=1, shown=1, tw=0, myId='#00001', drawn=false;
+const LET='TRWAGMYFPDXBNJZSQVHLCKE';
+function mkId(){ const n=Math.floor(Math.random()*1e8); return '#'+String(n).padStart(8,'0')+LET[n%23]; }
+function rollText(el,final){
+  if(RM){ el.textContent=final; return; }
+  const t0=performance.now(), d=1100;
+  const step=now=>{ const p=clamp((now-t0)/d,0,1); let o=''; for(let i=0;i<final.length;i++){ const ch=final[i]; o+=(i===0||p>(i+1)/(final.length+1))?ch:(/[0-9]/.test(ch)?Math.floor(Math.random()*10):LET[Math.floor(Math.random()*23)]); } el.textContent=o; if(p<1) requestAnimationFrame(step); else el.textContent=final; };
+  requestAnimationFrame(step);
+}
+function setNum(n,id){
+  cur=n; regNum.textContent='No. '+pad(n); cNo.textContent=pad(n);
+  if(id){ myId=id; rollText(cId,id); if(dniF) dniF.value=id; }
+  const t0=performance.now(), d=RM?1:1100; cancelAnimationFrame(tw);
+  const step=now=>{ const p=clamp((now-t0)/d,0,1); odo.textContent=p<1?pad(1+Math.floor(Math.random()*100)):pad(n); cBig.textContent=odo.textContent; if(p<1) tw=requestAnimationFrame(step); };
   tw=requestAnimationFrame(step);
 }
-pick.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b&&!taken.has(+b.dataset.n)) setNum(+b.dataset.n); });
-pick.addEventListener('keydown',e=>{
-  const d={ArrowRight:1,ArrowLeft:-1,ArrowDown:10,ArrowUp:-10}[e.key]; if(!d) return; e.preventDefault();
-  const n=clamp(cur+d,1,100); setNum(n); const b=pick.querySelector('[data-n="'+n+'"]'); if(b) b.focus();
-});
-pref.addEventListener('input',()=>{ const v=parseInt(pref.value,10); if(v>=1&&v<=100&&!taken.has(v)) setNum(v,true); });
-
-/* ---------- reserved numbers (read from Supabase; numbers only) ---------- */
-let taken=new Set();
-function markTaken(list){
-  taken=new Set(list||[]);
-  $$('button',pick).forEach(b=>{ const t=taken.has(+b.dataset.n); b.classList.toggle('taken',t); b.setAttribute('aria-disabled',t?'true':'false'); b.setAttribute('aria-label','Number '+b.dataset.n+(t?', already requested':'')); });
-  if(taken.has(cur)){ for(let d=1;d<100;d++){ const c=[cur+d,cur-d].find(n=>n>=1&&n<=100&&!taken.has(n)); if(c){ setNum(c); break; } } }
-}
-async function loadTaken(){
-  const C=window.ALTUZ_CONFIG||{}, url=(C.supabaseUrl||'').replace(/\/+$/,''), key=C.supabaseAnonKey||''; if(!url||!key) return;
-  const h={'apikey':key,'Content-Type':'application/json'}; if(!/^sb_/.test(key)) h.Authorization='Bearer '+key;
-  try{ const r=await fetch(url+'/rest/v1/rpc/taken_numbers',{method:'POST',headers:h,body:'{}'}); if(r.ok) markTaken(await r.json()); }catch(e){}
-}
-loadTaken();
+function draw(){ if(drawn) return; drawn=true; setNum(1+Math.floor(Math.random()*100),mkId()); $('#cRank').textContent='Pending'; }
+numCta.addEventListener('click',draw);
 
 /* ---------- admission requests ---------- */
 const form=$('#adm-form'), err=$('#err'), btn=$('#submit');
-async function save(row){
+async function save(p){
   const C=window.ALTUZ_CONFIG||{}, url=(C.supabaseUrl||'').replace(/\/+$/,''), key=C.supabaseAnonKey||'';
   if(!url||!key) throw new Error('not-configured');
-  const h={'apikey':key,'Content-Type':'application/json','Prefer':'return=minimal'};
-  if(!/^sb_/.test(key)) h.Authorization='Bearer '+key;
-  const r=await fetch(url+'/rest/v1/admission_requests',{method:'POST',headers:h,body:JSON.stringify(row)});
-  if(r.status===409){ let t=''; try{ t=await r.text(); }catch(e){} return /number_key/.test(t)?'taken':'duplicate'; }
-  if(!r.ok) throw new Error('supabase '+r.status);
-  return 'ok';
+  const h={'apikey':key,'Content-Type':'application/json'}; if(!/^sb_/.test(key)) h.Authorization='Bearer '+key;
+  const r=await fetch(url+'/rest/v1/rpc/join_waitlist',{method:'POST',headers:h,body:JSON.stringify(p)});
+  if(!r.ok){ let t=''; try{ t=await r.text(); }catch(e){} if(/full/.test(t)) return {full:true}; throw new Error('supabase '+r.status); }
+  const d=await r.json(); return Array.isArray(d)?d[0]:d;
 }
 form.addEventListener('submit',async e=>{
   e.preventDefault(); err.textContent='';
@@ -303,19 +308,23 @@ form.addEventListener('submit',async e=>{
   if(!$('#consent').checked){ err.textContent='Tick the box so we’re allowed to email you.'; $('#consent').focus(); return; }
   const pieces=$$('input[name=piece]:checked',form).map(i=>i.value);
   const nz=v=>{ v=v.trim(); return v?v:null; };
-  const row={email:email.toLowerCase(),alias:nz($('#alias').value),city:nz($('#city').value),run_time:$('#when').value,preferred_number:cur,referrer:nz($('#ref').value),pieces,consent:true,consent_text:$('#consentText').textContent.trim(),source:'web'};
-  if(row.alias) row.alias=row.alias.slice(0,24); if(row.city) row.city=row.city.slice(0,80); if(row.referrer) row.referrer=row.referrer.slice(0,120);
+  const p={p_email:email.toLowerCase(),p_alias:nz($('#alias').value),p_city:nz($('#city').value),p_when:$('#when').value,p_referrer:nz($('#ref').value),p_pieces:pieces,p_source:'web'};
+  if(p.p_alias) p.p_alias=p.p_alias.slice(0,24); if(p.p_city) p.p_city=p.p_city.slice(0,80); if(p.p_referrer) p.p_referrer=p.p_referrer.slice(0,120);
   const bot=$('#company').value.trim()!=='';
   btn.disabled=true; const label=btn.textContent; btn.textContent='Sending…';
   try{
-    let res='ok';
-    if(!bot){ res=await save(row); if(res==='taken'){ await loadTaken(); btn.disabled=false; btn.textContent=label; err.textContent='That number was just taken. We moved you to the nearest free one; check it and send again.'; return; } if(window.altuzTrack) window.altuzTrack('admission'); }
+    if(!bot){
+      const row=await save(p);
+      if(row&&row.full){ btn.disabled=false; btn.textContent=label; err.textContent='All 100 numbers of Drop 001 have been drawn. Write to projectaltuz@gmail.com to join the reserve list.'; return; }
+      if(row&&row.number){ drawn=true; setNum(row.number,row.dni); }
+      if(window.altuzTrack) window.altuzTrack('admission');
+    }
     $('#cRank').textContent='Pending';
-    $('#admBody').innerHTML='<div class="done" role="status"><h2 class="x-wide" id="h-admission" tabindex="-1">Request received.</h2><p class="p">We read every request. Before pre-sale opens we’ll write to tell you whether you’re in, and your number will be waiting.</p><p class="num chrome">'+pad(cur)+'</p><p class="p">That’s your number, held for you while we review your request.</p></div>';
-    const h=$('#h-admission'); if(h) h.focus({preventScroll:true});
+    $('#admBody').innerHTML='<div class="done" role="status"><h2 class="x-wide" id="h-admission" tabindex="-1">Request received.</h2><p class="p">We read every request. Before pre-sale opens we’ll write to tell you whether you’re in, and your number will be waiting.</p><p class="num chrome">'+pad(cur)+'</p><p class="p">Your ID: <b>'+myId+'</b>. Drawn at random, it’s yours for life. Keep it: it’s how you’ll identify yourself to the society.</p></div>';
+    const hh=$('#h-admission'); if(hh) hh.focus({preventScroll:true});
   }catch(ex){
     btn.disabled=false; btn.textContent=label;
-    err.textContent='We couldn’t send your request right now. Email projectaltuz@gmail.com with your preferred number and we’ll add it by hand.';
+    err.textContent='We couldn’t send your request right now. Email projectaltuz@gmail.com and we’ll add you by hand.';
   }
 });
 

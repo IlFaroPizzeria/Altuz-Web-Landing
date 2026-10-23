@@ -590,3 +590,8 @@ noscript p{position:fixed;left:16px;right:16px;bottom:16px;z-index:200;margin:0;
 @keyframes spark{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:.9;transform:scale(1)}}
 @media(max-width:820px){.dock [data-open="light"]::after{top:9px;right:4px}}
 @media(prefers-reduced-motion:reduce){.dock [data-open="light"]::after{animation:none;opacity:.6}}
+
+/* teaser counter replaces the progress line */
+.reel .left{position:absolute;left:0;right:0;bottom:2.4cqw;text-align:center;font:600 clamp(11px,2.5cqw,14px)/1 var(--display);letter-spacing:.14em;color:#c9ced4;font-variant-numeric:tabular-nums}
+.reel .left b{font-weight:700;color:#fff}
+.reel .left span{color:#7d848c}
