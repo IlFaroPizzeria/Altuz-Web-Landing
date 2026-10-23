@@ -281,14 +281,15 @@ function rollText(el,final){
   const step=now=>{ const p=clamp((now-t0)/d,0,1); let o=''; for(let i=0;i<final.length;i++){ const ch=final[i]; o+=(i===0||p>(i+1)/(final.length+1))?ch:(/[0-9]/.test(ch)?Math.floor(Math.random()*10):LET[Math.floor(Math.random()*23)]); } el.textContent=o; if(p<1) requestAnimationFrame(step); else el.textContent=final; };
   requestAnimationFrame(step);
 }
+const cRank=$('#cRank'); const rankOf=n=>n<=2?'Founder':'Origin';
 function setNum(n,id){
-  cur=n; regNum.textContent='No. '+pad(n); cNo.textContent=pad(n);
+  cur=n; cRank.textContent=rankOf(n); regNum.textContent='No. '+pad(n); cNo.textContent=pad(n);
   if(id){ myId=id; rollText(cId,id); if(dniF) dniF.value=id; }
   const t0=performance.now(), d=RM?1:1100; cancelAnimationFrame(tw);
   const step=now=>{ const p=clamp((now-t0)/d,0,1); odo.textContent=p<1?pad(1+Math.floor(Math.random()*100)):pad(n); cBig.textContent=odo.textContent; if(p<1) tw=requestAnimationFrame(step); };
   tw=requestAnimationFrame(step);
 }
-function draw(){ if(drawn) return; drawn=true; setNum(1+Math.floor(Math.random()*100),mkId()); $('#cRank').textContent='Pending'; }
+function draw(){ if(drawn) return; drawn=true; setNum(1+Math.floor(Math.random()*100),mkId()); }
 numCta.addEventListener('click',draw);
 
 /* ---------- admission requests ---------- */
@@ -319,7 +320,6 @@ form.addEventListener('submit',async e=>{
       if(row&&row.number){ drawn=true; setNum(row.number,row.dni); }
       if(window.altuzTrack) window.altuzTrack('admission');
     }
-    $('#cRank').textContent='Pending';
     $('#admBody').innerHTML='<div class="done" role="status"><h2 class="x-wide" id="h-admission" tabindex="-1">Request received.</h2><p class="p">We read every request. Before pre-sale opens we’ll write to tell you whether you’re in, and your number will be waiting.</p><p class="num chrome">'+pad(cur)+'</p><p class="p">Your ID: <b>'+myId+'</b>. Drawn at random, it’s yours for life. Keep it: it’s how you’ll identify yourself to the society.</p></div>';
     const hh=$('#h-admission'); if(hh) hh.focus({preventScroll:true});
   }catch(ex){
