@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ALTUZ · Drop 001 — Garment mockup</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@800&family=IBM+Plex+Mono:wght@400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0c;--ink:#e9ebef;--mut:#8b9099;--line:rgba(205,208,214,.16);--sil:#cfd3d9}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:Jost,system-ui,sans-serif;overflow:hidden}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.mono{font-family:'IBM Plex Mono',monospace}
+header{position:fixed;left:24px;top:20px;z-index:5;pointer-events:none}
+header b{font-weight:500;letter-spacing:.42em;font-size:13px;display:block}
+header span{font-size:11px;color:var(--mut);letter-spacing:.16em;text-transform:uppercase}
+#panel{position:fixed;right:0;top:0;bottom:0;width:340px;z-index:6;background:linear-gradient(180deg,rgba(12,12,14,.92),rgba(8,8,10,.94));border-left:1px solid var(--line);backdrop-filter:blur(14px);padding:20px 20px 24px;overflow:auto;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+#panel.shut{transform:translateX(100%)}
+#panelBtn{position:fixed;right:350px;top:18px;z-index:7;transition:right .45s cubic-bezier(.2,.7,.2,1)}
+#panel.shut ~ #panelBtn{right:16px}
+h1{font-weight:300;font-size:26px;letter-spacing:.02em;margin:6px 0 2px}
+#pCode{font-size:11px;color:var(--mut);letter-spacing:.14em}
+.grp{margin-top:18px}.grp>small{display:block;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);margin-bottom:8px}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;color:var(--ink);background:transparent;border:1px solid var(--line);padding:8px 12px;font-size:12px;letter-spacing:.08em;cursor:pointer;transition:background .2s,border-color .2s}
+button:hover{border-color:var(--sil)}button.on{background:var(--ink);color:#0a0a0c;border-color:var(--ink)}
+#spec .r{display:flex;justify-content:space-between;gap:14px;padding:7px 0;border-bottom:1px solid var(--line);font-size:12px}
+#spec .r span{color:var(--mut)}#spec .r b{font-weight:400;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px}
+#stat{margin-top:14px;font-size:10px;color:var(--mut);font-family:'IBM Plex Mono',monospace;letter-spacing:.06em}
+.note{margin-top:14px;font-size:11px;line-height:1.55;color:var(--mut)}
+#busy{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--sil);opacity:0;transition:opacity .2s;pointer-events:none}
+#busy.on{opacity:1}
+#intro{position:fixed;inset:0;z-index:20;background:var(--bg);display:grid;place-items:center;letter-spacing:.5em;font-size:12px;color:var(--mut);transition:opacity .8s;}#intro.gone{opacity:0;pointer-events:none}
+#hint{position:fixed;left:24px;bottom:20px;z-index:5;font-size:11px;color:var(--mut);letter-spacing:.1em}
+@media(max-width:760px){#panel{width:100%;top:auto;height:54%;border-left:0;border-top:1px solid var(--line)}#panel.shut{transform:translateY(100%)}#panelBtn{right:16px;top:auto;bottom:calc(54% + 12px)}#panel.shut ~ #panelBtn{bottom:16px;right:16px}#hint{display:none}}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<header><b>ALTUZ</b><span>Drop 001 · garment mockup · real scale 1 : 1 (cm)</span></header>
+<aside id="panel">
+  <h1 id="pTitle">Tee · Black</h1><div id="pCode" class="mono"></div>
+  <div class="grp"><small>Piece</small><div class="row"><button data-p="teeB">Tee · Black</button><button data-p="teeW">Tee · White</button><button data-p="short">Short</button></div></div>
+  <div class="grp"><small>Size · graded from the tech pack</small><div class="row"><button data-s="S">S</button><button data-s="M" class="on">M</button><button data-s="L">L</button><button data-s="XL">XL</button></div></div>
+  <div class="grp"><small>View</small><div class="row"><button data-v="front">Front</button><button data-v="back">Back</button><button data-v="side">Side</button><button data-v="three">3/4 left</button><button data-v="three2">3/4 right</button></div></div>
+  <div class="grp"><small>Details</small><div class="row"><button data-d="mark" data-pk="tee short">Reflective A / ALTUZ</button><button data-d="neck" data-pk="tee short">Neck / waist</button><button data-d="side" data-pk="tee short">Side seam</button><button data-d="back" data-pk="tee short">Back / pocket</button><button data-d="label" data-pk="tee short">Labels</button><button data-d="hem" data-pk="tee short">Hem</button></div></div>
+  <div class="grp"><small>Display</small><div class="row"><button data-t="ruler" class="on">Ruler (cm)</button><button data-t="dims">Tech-pack callouts</button><button data-t="night">Night · reflective</button><button data-t="wire">Wireframe</button><button data-t="turn">Turntable</button></div></div>
+  <div class="grp"><small>Output</small><div class="row"><button id="qHigh">High quality</button><button id="exportGlb">Export GLB</button><button id="exportPng">Save PNG</button></div></div>
+  <div class="grp"><small>Tech-pack data</small><div id="spec"></div></div>
+  <div id="stat"></div>
+  <p class="note">Procedurally generated from Tech Pack v1.3 (1 unit = 1 cm). Silhouette, openings, seams, reflective placements and labels follow the sheets TP-01 to TP-09. For a photographic still, export the GLB and render it in Blender or similar.</p>
+</aside>
+<button id="panelBtn" aria-label="Toggle panel">Panel</button>
+<div id="hint">Drag to orbit · scroll to zoom · right-drag to pan</div>
+<div id="busy">Generating</div>
+<div id="intro">ALTUZ</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js"></script>
+<script src="js/mesh.js?v=1"></script><script src="js/art.js?v=1"></script><script src="js/materials.js?v=1"></script><script src="js/garments.js?v=1"></script><script src="js/viewer.js?v=1"></script>
+</body>
+</html>

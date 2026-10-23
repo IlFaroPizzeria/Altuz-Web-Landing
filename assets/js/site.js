@@ -272,7 +272,7 @@ $('#faro').addEventListener('click',()=>{
 
 /* ---------- random ID (assigned by Supabase; the page only previews) ---------- */
 const odo=$('#odo'), numCta=$('#numCta'), cId=$('#cId'), dniF=$('#dni');
-let cur=1, myId='12345678Z', drawn=false;
+let cur=1, myId='00000000T', drawn=false;
 const LET='TRWAGMYFPDXBNJZSQVHLCKE';
 function mkId(){ const n=Math.floor(Math.random()*1e8); return String(n).padStart(8,'0')+LET[n%23]; }
 function rollText(els,final){
@@ -292,7 +292,7 @@ const rcfg=()=>{ const C=window.ALTUZ_CONFIG||{}; const url=(C.supabaseUrl||'').
 $('#regForm').addEventListener('submit',async e=>{
   e.preventDefault(); const er=$('#regErr'), out=$('#regOut'); er.textContent=''; out.textContent='';
   const id=$('#regId').value.trim().toUpperCase().replace(/^#/,'');
-  if(!/^\d{8}[A-Z]$/.test(id)){ er.textContent='An ID is eight digits and a letter, like 12345678Z.'; return; }
+  if(!/^\d{8}[A-Z]$/.test(id)){ er.textContent='An ID is eight digits and a letter, like 00000000T.'; return; }
   const {url,key,h}=rcfg(); if(!url||!key){ er.textContent='The Registry is not available right now.'; return; }
   try{
     const r=await fetch(url+'/rest/v1/rpc/registry_lookup',{method:'POST',headers:h,body:JSON.stringify({p_dni:id})}); if(!r.ok) throw 0;

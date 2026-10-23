@@ -25,7 +25,7 @@
 <meta name="twitter:description" content="Altuz is a private society of runners. Numbered, reflective pieces, released only to members. Drop 001 admits a hundred.">
 <meta name="twitter:image" content="https://altuz-ten.vercel.app/assets/img/og.jpg">
 <link rel="preload" href="/assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/site.css?v=10">
+<link rel="stylesheet" href="/assets/css/site.css?v=11">
 <script src="/assets/js/boot.js"></script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Organization", "name": "Altuz", "url": "https://altuz-ten.vercel.app", "logo": "https://altuz-ten.vercel.app/assets/img/icon-512.png", "email": "projectaltuz@gmail.com", "slogan": "Run elevated", "founder": [{"@type": "Person", "name": "Nils Lehmann Podadera"}, {"@type": "Person", "name": "Álvaro Castejón Arregui"}]}</script>
 </head>
@@ -55,8 +55,8 @@
   <div class="copy">
     <h1 class="x-wide rv">Membership, worn.</h1>
     <p class="lede rv" style="--d:.2s">Altuz is a private society of runners. Its tees and race shorts are numbered, reflective and released only to members. Wearing one means you were let in.</p>
-    <div class="capture glass rv" id="capture" style="--d:.35s"><span class="cap-hint">Drop 001 · 100 members</span><button class="dark" type="button" data-open="number"><span class="lg">Get your ID</span><span class="sm">Get yours</span></button></div>
-    <p class="meta rv" style="--d:.5s"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><span>Drop 001 admits a hundred members. Requests close at pre-sale, in January 2027.</span></p>
+    <div class="capture glass rv" id="capture" style="--d:.35s"><span class="cap-hint">Drop 001 · 100 members</span><button class="dark" type="button" data-open="number"><span class="lg">Request your ID</span><span class="sm">Request yours</span></button></div>
+    <p class="meta rv" style="--d:.5s"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><span>Drop 001 admits a hundred members. Requests close at pre-sale, in January 2027. We read every one and write to you before then.</span></p>
   </div>
   <div class="cardzone rv" style="--d:.15s">
     <button class="card" id="card" type="button" aria-pressed="false" aria-label="Your Altuz membership card. Press to turn it over.">
@@ -67,7 +67,7 @@
             <span class="sheen"></span><span class="prism"></span>
             <span class="c-top eng"><svg class="logo c-logo" aria-hidden="true"><use href="#logo"/></svg><span class="c-word">ALTUZ</span><span class="c-no">Drop</span></span>
             <span class="c-big" id="cBig">001</span>
-            <span class="c-bot eng"><span><small>ID</small><b id="cId">12345678Z</b></span><span class="r"><small>Since</small><b>Day one</b></span></span>
+            <span class="c-bot eng"><span><small>ID</small><b id="cId">00000000T</b></span><span class="r"><small>Since</small><b>Day one</b></span></span>
           </span>
           <span class="face back">
             <span class="stripe"></span>
@@ -182,7 +182,7 @@
     <h2 class="x-wide pi" id="h-number" tabindex="-1">Your ID is drawn.</h2>
     <p class="p pi" style="--i:1">Every member of Drop 001 receives a personal ID, drawn at random and never issued twice. It works like an identity number: yours for life, printed on your card. Each piece you hold is linked to your ID in the Registry.</p>
     <div class="odo-row pi" style="--i:2">
-      <div class="odo" aria-live="polite"><span class="big chrome idbig" id="odo">12345678Z</span></div>
+      <div class="odo" aria-live="polite"><span class="big chrome idbig" id="odo">00000000T</span></div>
           </div>
     <div class="num-foot pi" style="--i:4">
       <button class="dark" type="button" id="numCta" data-open="admission">Get my ID</button>
@@ -197,7 +197,7 @@
     <h2 class="x-wide pi" id="h-registry" tabindex="-1">The Registry.</h2>
     <p class="p pi" style="--i:1">Every piece is linked to the ID of the member who holds it. Enter an ID to see its rank and its pieces. Names and emails are never shown.</p>
     <form id="regForm" class="pi" style="--i:2" novalidate>
-      <div class="field"><label for="regId">ID</label><input id="regId" name="regId" type="text" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="12345678Z"></div>
+      <div class="field"><label for="regId">ID</label><input id="regId" name="regId" type="text" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="00000000T"></div>
       <p class="err" id="regErr" role="alert"></p>
       <div><button class="dark" type="submit">Look up</button></div>
     </form>
@@ -269,7 +269,7 @@
 </aside>
 <noscript><p>Altuz needs JavaScript for the entrance and the admission form. You can still write to projectaltuz@gmail.com.</p></noscript>
 <script src="/assets/js/config.js?v=4"></script>
-<script src="/assets/js/site.js?v=12"></script>
+<script src="/assets/js/site.js?v=13"></script>
 <script src="/assets/js/consent.js?v=4"></script>
 </body>
 </html>
