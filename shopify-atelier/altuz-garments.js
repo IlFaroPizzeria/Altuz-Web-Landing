@@ -180,7 +180,7 @@ function drawNum(key,ctx){ const sp=NUMSPEC[key], txt=A.num2||'1 / 100'; ctx.sav
   else if(key==='orm'){ ctx.globalCompositeOperation='source-atop'; ctx.shadowColor='rgb(210,100,200)'; ctx.shadowBlur=7; ctx.fillStyle='rgb(240,61,255)'; ctx.fillText(txt,sp.x,y); ctx.shadowBlur=0; ctx.fillText(txt,sp.x,y); }
   else { ctx.fillStyle='#fff'; ctx.fillText(txt,sp.x,y); }
   ctx.restore(); }
-A.setNumber=function(n){ n=Math.max(1,Math.min(100,parseInt(n,10)||1)); A.n=n; A.num=String(n).padStart(3,'0')+'/100'; A.num2=n+' / 100'; ['sticker','orm','front'].forEach(k=>delete IMG[k]); };
+A.setNumber=function(n){ n=Math.max(1,Math.min(300,parseInt(n,10)||1)); A.n=n; A.num=String(n).padStart(3,'0')+'/300'; A.num2=n+' / 300'; ['sticker','orm','front'].forEach(k=>delete IMG[k]); };
 A.imgTex=function(key,color){ if(IMG[key]) return IMG[key]; const im=new Image(); const dyn=!!NUMSPEC[key]; let cv,t; if(dyn){ cv=document.createElement('canvas'); t=new THREE.CanvasTexture(cv); } else t=new THREE.Texture(im); t.anisotropy=8; if(color) t.encoding=THREE.sRGBEncoding; t.generateMipmaps=true; t.minFilter=THREE.LinearMipmapLinearFilter;
   A.pending=(A.pending||0)+1; im.onload=()=>{ if(dyn){ cv.width=im.naturalWidth; cv.height=im.naturalHeight; const cx=cv.getContext('2d'); cx.drawImage(im,0,0); drawNum(key,cx); } t.needsUpdate=true; A.pending--; }; im.src=window.ALTUZ_IMG[key]; IMG[key]=t; return t; };
 A.markA=()=>A.imgTex('markA'); A.logoV=()=>A.imgTex('logoV'); A.frontMask=()=>A.imgTex('front');

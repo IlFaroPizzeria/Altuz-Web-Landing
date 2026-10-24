@@ -51,136 +51,145 @@ const waveOf=p=>{ for(let i=0;i<WAVES.length;i++) if(p<=WAVES[i]) return i+1; re
 function login(id,row){
   myId=id; const n=clamp(parseInt(row&&row.number,10)||1,1,TOTAL);
   MEMBER={n:n,rank:(row&&row.rank)||(n<=2?'Founder':n<=100?'Origin':'Circle'),name:clean(row&&row.alias),invites:parseInt(row&&row.invites,10)||0,pos:parseInt(row&&row.queue_pos,10)||0,joined:parseInt(row&&row.joined,10)||0};
-  $$('[data-id]').forEach(e=>e.textContent=id);
-  $('#rank').textContent=(MEMBER.name?MEMBER.name+' · ':'')+MEMBER.rank+' · No. '+pad(MEMBER.n)+' / '+TOTAL;
-  const ps=$('.plate small'); if(ps){ ps.textContent=''; ps.appendChild(document.createElement('i')); ps.appendChild(document.createTextNode(MEMBER.name?MEMBER.name+' · Member ID':'Member ID')); }
-  $('#gate').classList.add('out'); $('#app').classList.add('on');
-  try{ document.body.classList.add('lock'); }catch(e){}
-  build(); intro();
+  $('#gate').classList.add('out');
+  build();
   rpc('community_pulse').then(p=>{ PULSE=p&&typeof p==='object'?p:null; paintPulse(); }).catch(()=>{ paintPulse(); });
 }
 
-/* ---------- community page ---------- */
-let reveal=null;
+/* ---------- community pages (one screen each, no scroll) ---------- */
+const NS='http://www.w3.org/2000/svg';
+const svgLogo=cls=>{ const lg=document.createElementNS(NS,'svg'); lg.setAttribute('class',cls||'logo'); lg.setAttribute('aria-hidden','true'); const u=document.createElementNS(NS,'use'); u.setAttribute('href','#logo'); lg.appendChild(u); return lg; };
+const ARROW=d=>{ const s=document.createElementNS(NS,'svg'); s.setAttribute('viewBox','0 0 24 24'); s.setAttribute('fill','none'); s.setAttribute('stroke','currentColor'); s.setAttribute('stroke-width','1.8'); s.setAttribute('stroke-linecap','round'); s.setAttribute('stroke-linejoin','round'); const p=document.createElementNS(NS,'path'); p.setAttribute('d',d); s.appendChild(p); return s; };
+const NAMES=['You','Registry','The room','Your number','Access'];
+let PAGES=[], cur=0, lockNav=false, mapLit=false, cardTick=null;
+
+function bgBuild(){
+  let bg=$('#cbg'); if(bg) bg.remove();
+  bg=el('div'); bg.id='cbg'; bg.setAttribute('aria-hidden','true');
+  bg.appendChild(el('div','brushed'));
+  const t=document.createElementNS(NS,'svg'); t.setAttribute('class','trackbg'); t.setAttribute('viewBox','0 0 1600 1000'); t.setAttribute('preserveAspectRatio','xMidYMid slice');
+  t.innerHTML='<defs><linearGradient id="tfade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#15171a" stop-opacity="0"/><stop offset=".45" stop-color="#15171a" stop-opacity=".16"/><stop offset="1" stop-color="#15171a" stop-opacity=".02"/></linearGradient><filter id="tglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="7"/></filter></defs><g transform="rotate(-13 800 520)"><g fill="none" stroke="url(#tfade)" stroke-width="2"><rect x="120" y="110" width="1480" height="780" rx="390"/><rect x="154" y="144" width="1412" height="712" rx="356"/><rect x="188" y="178" width="1344" height="644" rx="322"/><rect x="222" y="212" width="1276" height="576" rx="288"/><rect x="256" y="246" width="1208" height="508" rx="254"/><rect x="290" y="280" width="1140" height="440" rx="220"/><rect x="324" y="314" width="1072" height="372" rx="186"/><rect x="358" y="348" width="1004" height="304" rx="152"/></g><g fill="none" stroke-linecap="round"><rect class="rn rn-g" pathLength="100" x="188" y="178" width="1344" height="644" rx="322" stroke="#fff" stroke-width="22" filter="url(#tglow)"/><rect class="rn" pathLength="100" x="188" y="178" width="1344" height="644" rx="322" stroke="#fff" stroke-width="5"/><rect class="rn" pathLength="100" x="188" y="178" width="1344" height="644" rx="322" stroke="#6f757c" stroke-width="3" style="animation-delay:-.4s"/></g></g>';
+  bg.appendChild(t); bg.appendChild(el('div','orb o1')); bg.appendChild(el('div','orb o2')); bg.appendChild(el('div','grain'));
+  $('#app').insertBefore(bg,$('#app').firstChild);
+}
+
 function build(){
-  let root=$('#comm'); if(root) root.remove();
-  root=el('main'); root.id='comm'; $('#app').appendChild(root);
-  let bg=$('#cbg'); if(!bg){ bg=el('div'); bg.id='cbg'; bg.setAttribute('aria-hidden','true'); $('#app').insertBefore(bg,$('#app').firstChild); }
-  const sec=(cls)=>{ const s=el('section','cs '+(cls||'')); root.appendChild(s); return s; };
+  ['#comm','.ctop','.cdock','.cpager'].forEach(s=>$$(s).forEach(e=>e.remove()));
+  bgBuild();
+  const app=$('#app'); app.classList.add('on');
+  const hasPos=MEMBER.pos>0, wv=hasPos?waveOf(MEMBER.pos):0;
 
-  // 0 · you
-  let s=sec('s0'); const w=el('div','wrap c');
-  w.appendChild(el('span','eyebrow rv',(MEMBER.name?'Welcome back, '+MEMBER.name:'Welcome back')+' · Drop 001'));
-  const big=el('div','big chrome rv',myId); big.dataset.id=''; w.appendChild(big);
-  const p0=el('p','lede rv','You are inside. Everything that comes from Altuz is written against this ID, and against the number that goes with it.'); w.appendChild(p0);
-  const cue=el('div','scrollcue rv'); cue.appendChild(el('span','', 'Scroll')); cue.appendChild(el('i')); w.appendChild(cue);
-  s.appendChild(w);
+  /* header, in the landing's way */
+  const top=el('header','ctop'); const br=el('div','brand'); br.appendChild(svgLogo('logo')); br.appendChild(el('span','','ALTUZ')); top.appendChild(br);
+  const rt=el('div','right'); const who=el('div','who glass'); who.appendChild(el('i')); who.appendChild(document.createTextNode('No. '+pad(MEMBER.n)+' / '+TOTAL+' · '+MEMBER.rank+(MEMBER.name?' · '+MEMBER.name:''))); rt.appendChild(who);
+  const ob=el('button','out','Switch ID'); ob.type='button'; ob.addEventListener('click',logout); rt.appendChild(ob); top.appendChild(rt); app.appendChild(top);
 
-  // 1 · standing
-  s=sec(); const w1=el('div','wrap');
-  w1.appendChild(el('span','eyebrow rv','01 · You'));
-  w1.appendChild(el('h2','wide chrome rv','Your place in the room.'));
-  const st=el('div','stats rv');
-  const card=(k,v,sub,id)=>{ const c=el('div','stat'); c.appendChild(el('small','',k)); const b=el('b','chrome',v); if(id) b.id=id; c.appendChild(b); const sp=el('span','',sub); if(id) sp.id=id+'S'; c.appendChild(sp); return c; };
-  st.appendChild(card('Your number',pad(MEMBER.n),'of '+TOTAL+' · closed to everyone else'));
-  st.appendChild(card('Standing',MEMBER.rank,rankLine[MEMBER.rank]||''));
-  const hasPos=MEMBER.pos>0;
-  st.appendChild(card('Your place in line',hasPos?('#'+MEMBER.pos):'—',hasPos?('Wave '+waveOf(MEMBER.pos)+' · opens '+(waveOf(MEMBER.pos)===1?'first':waveOf(MEMBER.pos)===2?'second':'third')):'We’ll confirm it by this ID','pos'));
-  w1.appendChild(st);
-  s.appendChild(w1);
+  const root=el('main'); root.id='comm'; app.appendChild(root);
+  PAGES=[]; const page=(inner)=>{ const p=el('section','pg'); const w=el('div','in'+(inner||'')); p.appendChild(w); root.appendChild(p); PAGES.push(p); return w; };
+  const rv=(e,d)=>{ e.classList.add('rv'); e.style.setProperty('--d',(d||0)+'s'); return e; };
+  const head=(w,eb,h,lede,tag)=>{ const box=el('div','copy'); box.appendChild(rv(el('span','eyebrow',eb),0)); box.appendChild(rv(el(tag||'h2','wide',h),.08)); if(lede) box.appendChild(rv(el('p','lede',lede),.16)); w.appendChild(box); return box; };
 
-  // 2 · registry map
-  s=sec(); const w2=el('div','wrap');
-  w2.appendChild(el('span','eyebrow rv','02 · The Registry'));
-  w2.appendChild(el('h2','wide chrome rv','Three hundred numbers. One owner each.'));
-  const cnt=el('div','counter rv'); const cn=el('b','chrome','0'); cn.id='cInside'; cnt.appendChild(cn); cnt.appendChild(el('span','','inside right now')); const cl=el('em','',''); cl.id='cLeft'; cnt.appendChild(cl); w2.appendChild(cnt);
-  const reg=el('div','reg rv'); reg.id='reg'; reg.setAttribute('role','img'); reg.setAttribute('aria-label','The registry of 300 numbers. Lit numbers are taken. Yours is marked.');
-  for(let i=1;i<=TOTAL;i++){ const d=el('span','d'+(i<=2?' f':i<=100?' o':' c')+(i===MEMBER.n?' me':'')); d.style.setProperty('--i',i); d.title=pad(i); reg.appendChild(d); }
-  w2.appendChild(reg);
-  const key=el('div','key rv'); [['f','Founders'],['o','Origin · 003–100'],['c','Circle · 101–300'],['me','You']].forEach(a=>{ const k=el('span','k'); k.appendChild(el('i',a[0])); k.appendChild(document.createTextNode(a[1])); key.appendChild(k); }); w2.appendChild(key);
-  s.appendChild(w2);
+  /* 1 · you */
+  let w=page(' two cardfirst'); const cp=head(w,(MEMBER.name?'Welcome back, '+MEMBER.name:'Welcome back')+' · Drop 001','You are inside.','Everything that comes from Altuz is written against this ID, and against the number that goes with it. It is yours alone.','h1');
+  const mini=el('div','mini');
+  const m=(k,v,s)=>{ const c=el('div','m glass'); c.appendChild(el('small','',k)); c.appendChild(el('b','chrome',v)); c.appendChild(el('span','',s)); return c; };
+  mini.appendChild(m('Your number',pad(MEMBER.n),'of '+TOTAL+' · closed to everyone else'));
+  mini.appendChild(m('Standing',MEMBER.rank,rankLine[MEMBER.rank]||''));
+  mini.appendChild(m('Your place in line',hasPos?('#'+MEMBER.pos):'—',hasPos?('Wave '+wv+' · opens '+['first','second','third'][wv-1]):'We’ll confirm it by this ID'));
+  cp.appendChild(rv(mini,.26));
+  const cz=el('div','cardzone'); rv(cz,.12); const card=el('div','card'); card.id='mcard';
+  card.appendChild(el('span','band')); card.appendChild(el('span','sheen')); card.appendChild(el('span','prism'));
+  const ct=el('span','c-top eng'); ct.appendChild(svgLogo('logo c-logo')); ct.appendChild(el('span','c-word','ALTUZ')); ct.appendChild(el('span','c-no','Drop')); card.appendChild(ct);
+  const cb=el('span','c-big'); cb.id='cNum'; cb.textContent=pad(MEMBER.n); const sm=el('small','','/ '+TOTAL); cb.appendChild(sm); card.appendChild(cb);
+  const bot=el('span','c-bot eng'); const l=el('span'); l.appendChild(el('small','','ID')); const cid=el('b','',myId); cid.id='cId'; l.appendChild(cid); const r=el('span','r'); r.appendChild(el('small','','Status')); r.appendChild(el('b','',MEMBER.rank)); bot.appendChild(l); bot.appendChild(r); card.appendChild(bot);
+  cz.appendChild(card); cz.appendChild(el('p','card-cap','Your card. Personal and non-transferable.')); w.appendChild(cz);
+  const tilt=(x,y)=>{ const b=card.getBoundingClientRect(); const px=clamp((x-b.left)/b.width,0,1), py=clamp((y-b.top)/b.height,0,1); card.style.setProperty('--ry',((px-.5)*14).toFixed(2)+'deg'); card.style.setProperty('--rx',((.5-py)*10).toFixed(2)+'deg'); card.style.setProperty('--lx',(px*100).toFixed(1)+'%'); card.style.setProperty('--ly',(py*100).toFixed(1)+'%'); };
+  if(!RM){ addEventListener('pointermove',e=>{ if(PAGES[cur]===PAGES[0]) tilt(e.clientX,e.clientY); },{passive:true}); }
 
-  // 3-5 · manifesto (hints, never the product)
-  const man=[
-    ['03 · The room','Not everyone gets in.','Altuz is a private society of runners. There is no shelf, no shop window, no checkout for strangers. There is a number, and it is yours.',null],
-    ['04 · The craft','Cut for the hours before dawn.','Black. Silent. Finished by hand, where nobody looks. You will know it the moment you put it on, and so will whoever passes you at five in the morning.',['Seen in the dark','Made in small numbers','Your number, inside']],
-    ['05 · The number','Made once. Numbered. Never again.','What we make is written against your ID and carries your number. When a number is taken it is closed: no restock, no second chance, no discount.',null]
-  ];
-  man.forEach(m=>{ const sc=sec('man'); const wm=el('div','wrap c'); wm.appendChild(el('span','eyebrow rv',m[0])); wm.appendChild(el('h2','wide chrome rv',m[1])); wm.appendChild(el('p','lede rv',m[2]));
-    if(m[3]){ const ch=el('div','chips rv'); m[3].forEach(t=>ch.appendChild(el('span','',t))); wm.appendChild(ch); }
-    sc.appendChild(wm); });
+  /* 2 · registry */
+  w=page(' two'); const rp=head(w,'The Registry','Three hundred numbers. One owner each.');
+  const cnt=el('div','counter'); const cn=el('b','chrome','0'); cn.id='cInside'; cnt.appendChild(cn); cnt.appendChild(el('span','','inside right now')); const cl=el('em','',''); cl.id='cLeft'; cnt.appendChild(cl); rp.appendChild(rv(cnt,.24));
+  const rw=el('div','regwrap glass'); rv(rw,.2);
+  const reg=el('div','reg'); reg.id='reg'; reg.setAttribute('role','img'); reg.setAttribute('aria-label','The registry of 300 numbers. Lit numbers are taken. Yours is marked.');
+  for(let i=1;i<=TOTAL;i++){ const d=el('span','d'+(i<=2?' f':'')+(i===MEMBER.n?' me':'')); d.title=pad(i); reg.appendChild(d); }
+  rw.appendChild(reg);
+  const key=el('div','key'); [['f','Founders · 001–002'],['','Origin · 003–100'],['','Circle · 101–300'],['me','You']].forEach(a=>{ const k=el('span','k'); k.appendChild(el('i',a[0])); k.appendChild(document.createTextNode(a[1])); key.appendChild(k); }); rw.appendChild(key);
+  w.appendChild(rw);
 
-  // 6 · access + invitations
-  s=sec(); const w6=el('div','wrap');
-  w6.appendChild(el('span','eyebrow rv','06 · Access'));
-  w6.appendChild(el('h2','wide chrome rv','The door opens in order.'));
-  w6.appendChild(el('p','lede rv','Founders first. After them, whoever has opened the most doors. If you tie, the lower number goes first. Three waves, one hundred places each, and nothing is sold outside them.'));
-  const wv=el('div','waves rv'); WAVES.forEach((e,i)=>{ const a=i?WAVES[i-1]+1:1; const d=el('div','wv'+(hasPos&&waveOf(MEMBER.pos)===i+1?' on':'')); d.appendChild(el('small','','Wave '+(i+1))); d.appendChild(el('b','chrome',a+'–'+e)); d.appendChild(el('span','',i===0?'Opens first':i===1?'Opens next':'Opens last')); wv.appendChild(d); }); w6.appendChild(wv);
-  const inv=el('div','invite rv');
+  /* 3 · the room (hints, never the product) */
+  w=page(); head(w,'The room','Not everyone gets in.');
+  const room=el('div','room');
+  [['Not everyone gets in.','Altuz is a private society of runners. There is no shelf, no shop window, no checkout for strangers. There is a number, and it is yours.',null],
+   ['Cut for the hours before dawn.','Black. Silent. Finished by hand, where nobody looks. You will know it the moment you put it on, and so will whoever passes you at five in the morning.',['Seen in the dark','Made in small numbers','Your number, inside']],
+   ['Made once. Numbered. Never again.','What we make is written against your ID and carries your number. When a number is taken it is closed: no restock, no second chance, no discount.',null]
+  ].forEach((a,i)=>{ const pn=el('div','pn glass'); rv(pn,.2+i*.1); pn.appendChild(el('h3','',a[0])); pn.appendChild(el('p','',a[1])); if(a[2]){ const ch=el('div','chips'); a[2].forEach(t=>ch.appendChild(el('span','',t))); pn.appendChild(ch); } room.appendChild(pn); });
+  w.appendChild(room);
+
+  /* 4 · your number: personal and non-transferable */
+  w=page(); head(w,'Your number','Yours alone. For good.','Your ID and your number belong to one person. They are never lent, sold or handed on.');
+  const rules=el('div','rules');
+  [['Personal','Your ID is written to you and to nobody else. It can’t be lent, sold or transferred, and a piece can’t be passed on outside the society.'],
+   ['One ID, two pieces','Each ID may hold one tee and one short, no more. Both carry the same member number, yours.'],
+   ['Never issued twice','A number is never freed or given to another runner. Only your written renunciation, to projectaltuz@gmail.com, retires it, and it is never reissued.'],
+   ['Your place decides when','Your place in line decides when you may reserve, not what you may hold. Waves open in order, and nothing is sold outside them.']
+  ].forEach((a,i)=>{ const ru=el('div','ru'); rv(ru,.22+i*.08); ru.appendChild(el('h3','',a[0])); ru.appendChild(el('p','',a[1])); rules.appendChild(ru); });
+  w.appendChild(rules);
+
+  /* 5 · access + invitations */
+  w=page(' two'); const ap=head(w,'Access','The door opens in order.','Founders first. After them, whoever has opened the most doors. If you tie, the lower number goes first. Three waves, one hundred places each.');
+  const wvs=el('div','waves'); WAVES.forEach((e,i)=>{ const a=i?WAVES[i-1]+1:1; const d=el('div','wv'+(hasPos&&wv===i+1?' on':'')); d.appendChild(el('small','','Wave '+(i+1))); d.appendChild(el('b','',a+'–'+e)); d.appendChild(el('span','',i===0?'Opens first':i===1?'Opens next':'Opens last')); wvs.appendChild(d); }); ap.appendChild(rv(wvs,.24));
+  ap.appendChild(rv(el('p','stay','Stay close. Dates are shared here first, on this ID, before anywhere else.'),.3)).style.marginTop='16px';
+  const inv=el('div','invite glass'); rv(inv,.2);
   inv.appendChild(el('h3','wide','Open a door.'));
   inv.appendChild(el('p','','Every runner who requests an ID through your link moves you up the line. Send it to someone who runs before sunrise.'));
   const link=SITE+'?ref='+pad(MEMBER.n);
   const row=el('div','linkrow'); const inp=el('input'); inp.type='text'; inp.readOnly=true; inp.value=link; inp.setAttribute('aria-label','Your invitation link'); row.appendChild(inp);
-  const cp=el('button','btn','Copy link'); cp.type='button'; row.appendChild(cp); inv.appendChild(row);
-  const sub=el('div','invstat'); sub.appendChild(el('span','','Doors opened by you')); const ib=el('b','chrome',String(MEMBER.invites)); ib.id='inv'; sub.appendChild(ib); inv.appendChild(sub);
-  if(navigator.share){ const sh=el('button','btn ghost','Share'); sh.type='button'; sh.addEventListener('click',()=>{ navigator.share({title:'Altuz',text:'A private society of runners. Request your ID.',url:link}).catch(()=>{}); }); inv.appendChild(sh); }
-  cp.addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText(link); }catch(e){ inp.select(); try{ document.execCommand('copy'); }catch(x){} } cp.textContent='Copied'; setTimeout(()=>{ cp.textContent='Copy link'; },1800); });
+  const cpb=el('button','btn small','Copy link'); cpb.type='button'; row.appendChild(cpb); inv.appendChild(row);
+  const sub=el('div','invstat'); sub.appendChild(el('span','','Doors opened by you')); const ib=el('b','chrome',String(MEMBER.invites)); sub.appendChild(ib); inv.appendChild(sub);
+  if(navigator.share){ const sh=el('button','btn ghost small','Share'); sh.type='button'; sh.addEventListener('click',()=>{ navigator.share({title:'Altuz',text:'A private society of runners. Request your ID.',url:link}).catch(()=>{}); }); inv.appendChild(sh); }
+  cpb.addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText(link); }catch(e){ inp.select(); try{ document.execCommand('copy'); }catch(x){} } cpb.textContent='Copied'; setTimeout(()=>{ cpb.textContent='Copy link'; },1800); });
   inp.addEventListener('focus',()=>inp.select());
-  w6.appendChild(inv); s.appendChild(w6);
+  w.appendChild(inv);
 
-  // 7 · close
-  s=sec('end'); const w7=el('div','wrap c');
-  const lg=document.createElementNS('http://www.w3.org/2000/svg','svg'); lg.setAttribute('class','logo'); lg.setAttribute('aria-hidden','true'); const u=document.createElementNS('http://www.w3.org/2000/svg','use'); u.setAttribute('href','#logo'); lg.appendChild(u); w7.appendChild(lg);
-  w7.appendChild(el('h2','wide chrome rv','Stay close.'));
-  w7.appendChild(el('p','lede rv','Dates are shared here first, on this ID, before anywhere else. Keep it with you.'));
-  const sw=el('button','btn ghost rv','Switch ID'); sw.type='button'; sw.addEventListener('click',logout); w7.appendChild(sw);
-  s.appendChild(w7);
-
-  // reveal on scroll
-  if(reveal) reveal.disconnect();
-  const items=$$('#comm .rv');
-  if(RM||!('IntersectionObserver' in window)){ items.forEach(e=>e.classList.add('in')); }
-  else{ reveal=new IntersectionObserver(es=>{ es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); reveal.unobserve(e.target); if(e.target.id==='reg') lightMap(); } }); },{threshold:.18,rootMargin:'0px 0px -6% 0px'}); items.forEach((e,i)=>{ e.style.transitionDelay=(i%4)*90+'ms'; reveal.observe(e); }); }
-  paintPulse();
+  /* dock + arrows */
+  const dock=el('nav','cdock glass'); dock.setAttribute('aria-label','Sections');
+  NAMES.forEach((n,i)=>{ const b=el('button','',n); b.type='button'; b.addEventListener('click',()=>go(i)); dock.appendChild(b); }); app.appendChild(dock);
+  const pg=(cls,d,lab,fn)=>{ const b=el('button','cpager glass '+cls); b.type='button'; b.setAttribute('aria-label',lab); b.appendChild(ARROW(d)); b.addEventListener('click',fn); app.appendChild(b); return b; };
+  pg('prev','M15 5l-7 7 7 7','Previous',()=>go(cur-1)); pg('next','M9 5l7 7-7 7','Next',()=>go(cur+1));
+  cur=-1; go(0,true); paintPulse();
+}
+function go(i,first){
+  i=clamp(i,0,PAGES.length-1); if(i===cur&&!first) return;
+  if(lockNav&&!first) return; lockNav=true; setTimeout(()=>{ lockNav=false; },RM?0:650);
+  const back=i<cur;
+  PAGES.forEach((p,k)=>{ if(k===i){ p.classList.remove('back'); p.classList.add('on'); } else { p.classList.remove('on'); p.classList.toggle('back',k<i); } });
+  cur=i;
+  $$('.cdock button').forEach((b,k)=>b.setAttribute('aria-current',k===i?'true':'false'));
+  const pv=$('.cpager.prev'), nx=$('.cpager.next'); if(pv) pv.disabled=i===0; if(nx) nx.disabled=i===PAGES.length-1;
+  if(i===0) rollId($('#cId'),myId,1300);
+  if(i===1){ if(!mapLit) lightMap(); }
+  if(i===4){ const f=$('.invite input'); if(f) f.blur(); }
 }
 function taken(){ const t=PULSE&&Array.isArray(PULSE.taken)?PULSE.taken:[]; return t.map(Number).filter(n=>n>=1&&n<=TOTAL); }
-let mapLit=false;
-function lightMap(){ mapLit=true; const T=new Set(taken()); T.add(1); T.add(2); T.add(MEMBER.n); $$('#reg .d').forEach((d,i)=>{ if(T.has(i+1)) setTimeout(()=>d.classList.add('t'),RM?0:Math.min(2200,i*7)); }); }
+function lightMap(){ mapLit=true; const T=new Set(taken()); T.add(1); T.add(2); T.add(MEMBER.n); $$('#reg .d').forEach((d,i)=>{ if(T.has(i+1)) setTimeout(()=>d.classList.add('t'),RM?0:350+Math.min(1800,i*6)); }); }
 function paintPulse(){
   const joined=PULSE&&Number.isFinite(+PULSE.joined)?+PULSE.joined:Math.max(MEMBER.joined,0);
   const c=$('#cInside'), l=$('#cLeft'); if(!c) return;
   if(joined>0){ const t0=performance.now(); const step=n=>{ const p=RM?1:clamp((n-t0)/1400,0,1); c.textContent=String(Math.round(joined*(1-Math.pow(1-p,3)))); if(p<1) requestAnimationFrame(step); }; requestAnimationFrame(step); if(l) l.textContent=(TOTAL-joined)+' numbers still unclaimed'; } else { c.textContent='—'; if(l) l.textContent=''; }
   if(mapLit){ const T=new Set(taken()); $$('#reg .d').forEach((d,i)=>{ if(T.has(i+1)) d.classList.add('t'); }); }
 }
-function logout(){
-  started=false; introDone=false; document.body.classList.remove('ready','lock'); $('#app').classList.remove('on');
-  const it=$('#intro'); it.style.display='none'; it.classList.remove('on','off'); $('#skip').hidden=true;
-  const m=$('#comm'); if(m) m.remove(); scrollTo(0,0);
-  const g=$('#gate'); g.classList.remove('out'); idIn.value=''; gErr.textContent=''; setTimeout(()=>{ try{idIn.focus({preventScroll:true})}catch(e){} },400);
-}
-$('#outBtn').addEventListener('click',logout);
-addEventListener('scroll',()=>{ const H=Math.max(1,document.documentElement.scrollHeight-innerHeight); const pr=Math.round(clamp(scrollY/H,0,1)*500)/500; const p=$('#progress'); if(p) p.style.transform='scaleX('+pr+')'; const bg=$('#cbg'); if(bg) bg.style.setProperty('--sy',(scrollY/H).toFixed(3)); },{passive:true});
-
-/* ---------- intro ---------- */
 function rollId(e,final,ms){
-  if(RM){ e.textContent=final; return; }
+  if(!e) return; if(RM){ e.textContent=final; return; }
   const t0=performance.now(); const step=n=>{ const p=clamp((n-t0)/ms,0,1); let o=''; for(let i=0;i<final.length;i++){ o+=(p>(i+1)/(final.length+1))?final[i]:(i===8?LET[Math.floor(Math.random()*23)]:Math.floor(Math.random()*10)); } e.textContent=p<1?o:final; if(p<1) requestAnimationFrame(step); }; requestAnimationFrame(step);
 }
-function finishIntro(){
-  if(introDone) return; introDone=true; const it=$('#intro'); it.classList.add('off'); it.classList.remove('on'); $('#skip').hidden=true; document.body.classList.remove('lock'); document.body.classList.add('ready');
-  setTimeout(()=>{ it.style.display='none'; },1600); scrollTo(0,0);
-  const s0=$('#comm .s0'); if(s0) $$('.rv',s0).forEach(e=>e.classList.add('in'));
+function logout(){
+  ['#comm','.ctop','.cdock','.cpager','#cbg'].forEach(s=>$$(s).forEach(e=>e.remove()));
+  PAGES=[]; cur=0; mapLit=false;
+  const g=$('#gate'); g.classList.remove('out'); idIn.value=''; gErr.textContent=''; setTimeout(()=>{ try{idIn.focus({preventScroll:true})}catch(e){} },400);
 }
-function intro(){
-  started=true; introDone=false; const it=$('#intro'); it.style.display='grid'; it.classList.remove('off'); it.classList.add('on'); $('.line1',it).textContent=''; $('.line2',it).textContent=''; $('#skip').hidden=false;
-  $('#skip').onclick=finishIntro;
-  const l1=$('.line1',it), l2=$('.line2',it), big=$('.idbig',it); big.style.opacity=0;
-  const L2='No. '+pad(MEMBER.n)+' of '+TOTAL+' · The Altuz community';
-  if(RM){ l1.textContent=MEMBER.name?('Identity confirmed · '+MEMBER.name):'Identity confirmed'; big.style.opacity=1; big.textContent=myId; l2.textContent=L2; setTimeout(finishIntro,1200); return; }
-  setTimeout(()=>{ l1.textContent=MEMBER.name?('Identity confirmed · '+MEMBER.name):'Identity confirmed'; },700);
-  setTimeout(()=>{ big.style.transition='opacity 1s'; big.style.opacity=1; rollId(big,myId,1700); },1500);
-  setTimeout(()=>{ l2.textContent=L2; },3600);
-  setTimeout(finishIntro,6000);
-}
-addEventListener('keydown',e=>{ if(e.key==='Escape'&&!introDone&&started) finishIntro(); });
+/* navigation: keys, wheel, swipe */
+addEventListener('keydown',e=>{ if(!PAGES.length||/INPUT|TEXTAREA/.test((document.activeElement||{}).tagName||'')) return; if(['ArrowRight','ArrowDown','PageDown'].includes(e.key)){ e.preventDefault(); go(cur+1); } else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){ e.preventDefault(); go(cur-1); } });
+let wAcc=0, wT=0; addEventListener('wheel',e=>{ if(!PAGES.length) return; const now=Date.now(); if(now-wT>260) wAcc=0; wT=now; wAcc+=Math.abs(e.deltaY)>Math.abs(e.deltaX)?e.deltaY:e.deltaX; if(Math.abs(wAcc)>60){ go(cur+(wAcc>0?1:-1)); wAcc=0; } },{passive:true});
+let tx=0, ty=0; addEventListener('touchstart',e=>{ tx=e.touches[0].clientX; ty=e.touches[0].clientY; },{passive:true});
+addEventListener('touchend',e=>{ if(!PAGES.length) return; const t=e.changedTouches[0]; const dx=t.clientX-tx, dy=t.clientY-ty; if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.2) go(cur+(dx<0?1:-1)); else if(Math.abs(dy)>60&&Math.abs(dy)>Math.abs(dx)*1.2) go(cur+(dy<0?1:-1)); },{passive:true});
 })();

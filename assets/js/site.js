@@ -306,7 +306,7 @@ $('#regForm').addEventListener('submit',async e=>{
     const d=await r.json(); const row=Array.isArray(d)?d[0]:d;
     if(!row||!row.rank){ er.textContent='No member with that ID.'; return; }
     const pcs=row.pieces||[];
-    out.innerHTML='<div class="regrow"><b>ID '+id+'</b><span>'+row.rank+'</span></div>'+(pcs.length?pcs.map(p=>'<div class="regrow"><b>'+String(p.model).replace(/[<>&]/g,'')+(p.colour?' · '+String(p.colour).replace(/[<>&]/g,''):'')+'</b><span>No. '+String(p.piece_no).padStart(3,'0')+' / 100</span></div>').join(''):'<div class="regrow"><b>No pieces yet</b><span>Drop 001</span></div>')+atelierLink(id);
+    out.innerHTML='<div class="regrow"><b>ID '+id+'</b><span>'+row.rank+'</span></div>'+(pcs.length?pcs.map(p=>'<div class="regrow"><b>'+String(p.model).replace(/[<>&]/g,'')+(p.colour?' · '+String(p.colour).replace(/[<>&]/g,''):'')+'</b><span>No. '+String(p.piece_no).padStart(3,'0')+' / 300</span></div>').join(''):'<div class="regrow"><b>No pieces yet</b><span>Drop 001</span></div>')+atelierLink(id);
   }catch(x){ er.textContent='We couldn’t check the Registry right now.'; }
 });
 
