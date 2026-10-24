@@ -157,21 +157,21 @@ function build(){
 
   /* dock + arrows */
   const dock=el('nav','cdock glass'); dock.setAttribute('aria-label','Sections');
-  NAMES.forEach((n,i)=>{ const b=el('button','',n); b.type='button'; b.addEventListener('click',()=>go(i)); dock.appendChild(b); }); app.appendChild(dock);
+  NAMES.forEach((n,i)=>{ if(!i) return; const b=el('button','',n); b.type='button'; b.setAttribute('aria-expanded','false'); b.addEventListener('click',()=>toggle(i)); b.dataset.i=i; dock.appendChild(b); }); app.appendChild(dock);
+  const scrim=el('div','cscrim'); scrim.id='cscrim'; scrim.addEventListener('click',()=>toggle(-1)); app.appendChild(scrim);
+  /* pages 2-5 become the landing's glass sheets */
+  PAGES.forEach((p,k)=>{ if(!k) return; const inner=p.firstChild; p.classList.add('sheet','glass'); p.setAttribute('role','dialog'); p.setAttribute('aria-label',NAMES[k]); p.inert=true;
+    const tp=el('div','sheet-top'); tp.appendChild(svgLogo('logo')); const x=el('button','x'); x.type='button'; x.setAttribute('aria-label','Close'); x.addEventListener('click',()=>toggle(-1)); tp.appendChild(x);
+    const body=el('div','sheet-body'); body.appendChild(inner); p.appendChild(tp); p.appendChild(body); });
   const pg=(cls,d,lab,fn)=>{ const b=el('button','cpager glass '+cls); b.type='button'; b.setAttribute('aria-label',lab); b.appendChild(ARROW(d)); b.addEventListener('click',fn); app.appendChild(b); return b; };
-  cur=-1; scrollTo(0,0); paintPulse(); intro();
+  cur=0; scrollTo(0,0); paintPulse(); intro();
 }
-function go(i){ i=clamp(i,0,PAGES.length-1); const p=PAGES[i]; if(p) p.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'}); }
-function mark(i){
-  if(i===cur) return; cur=i; $$('.cdock button').forEach((b,k)=>b.setAttribute('aria-current',k===i?'true':'false'));
-  if(i===0) rollId($('#cId'),myId,1300);
-  if(i===1&&!mapLit) lightMap();
-}
-let io=null;
-function watch(){
-  if(io) io.disconnect();
-  io=new IntersectionObserver(es=>{ es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('on'); const k=PAGES.indexOf(e.target); if(e.intersectionRatio>=.5||k===0) mark(k); } }); },{threshold:[.2,.5]});
-  PAGES.forEach(p=>io.observe(p));
+function toggle(i){
+  const same=i===cur||i<1; PAGES.forEach((p,k)=>{ if(!k) return; const on=!same&&k===i; p.classList.toggle('open',on); p.classList.toggle('on',on); p.inert=!on; });
+  cur=same?0:i; document.body.classList.toggle('sheet-open',cur>0);
+  $$('.cdock button').forEach(b=>b.setAttribute('aria-expanded',String(+b.dataset.i===cur)));
+  if(cur===1&&!mapLit) lightMap();
+  if(cur>0){ const h=$('.sheet-body',PAGES[cur]); if(h) h.scrollTop=0; }
 }
 function taken(){ const t=PULSE&&Array.isArray(PULSE.taken)?PULSE.taken:[]; return t.map(Number).filter(n=>n>=1&&n<=TOTAL); }
 function lightMap(){ mapLit=true; const T=new Set(taken()); T.add(1); T.add(2); T.add(MEMBER.n); $$('#reg .d').forEach((d,i)=>{ if(T.has(i+1)) setTimeout(()=>d.classList.add('t'),RM?0:350+Math.min(1800,i*6)); }); }
@@ -211,13 +211,12 @@ function finishIntro(){
   if(introDone) return; introDone=true; introTimers.forEach(clearTimeout);
   const it=$('#cintro'); if(it){ it.classList.add('off'); setTimeout(()=>it.remove(),1800); }
   document.body.classList.remove('cin'); scrollTo(0,0);
-  PAGES.forEach(p=>p.classList.remove('on'));
-  setTimeout(()=>{ if(PAGES[0]) PAGES[0].classList.add('on'); mark(0); watch(); },RM?0:500);
+  setTimeout(()=>{ if(PAGES[0]) PAGES[0].classList.add('on'); rollId($('#cId'),myId,1300); },RM?0:500);
 }
-addEventListener('keydown',e=>{ if((e.key==='Escape'||e.key==='Enter')&&!introDone&&$('#cintro')) finishIntro(); });
+addEventListener('keydown',e=>{ if((e.key==='Escape'||e.key==='Enter')&&!introDone&&$('#cintro')) finishIntro(); else if(e.key==='Escape'&&cur>0) toggle(-1); });
 function logout(){
   ['#comm','.ctop','.cdock','.cpager','#cbg'].forEach(s=>$$(s).forEach(e=>e.remove()));
-  PAGES=[]; cur=0; mapLit=false; if(io) io.disconnect(); introTimers.forEach(clearTimeout); introDone=true; document.body.classList.remove('cin'); const ci=$('#cintro'); if(ci) ci.remove(); scrollTo(0,0);
+  PAGES=[]; cur=0; mapLit=false; introTimers.forEach(clearTimeout); introDone=true; document.body.classList.remove('sheet-open'); document.body.classList.remove('cin'); const ci=$('#cintro'); if(ci) ci.remove(); scrollTo(0,0);
   const g=$('#gate'); g.classList.remove('out'); idIn.value=''; gErr.textContent=''; setTimeout(()=>{ try{idIn.focus({preventScroll:true})}catch(e){} },400);
 }
 })();
