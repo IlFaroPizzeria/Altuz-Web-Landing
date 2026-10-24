@@ -210,6 +210,14 @@ A.infoTex=function(code,size,comp){ const k=cv(6,7.5); const x=k.x; x.fillStyle=
   x.font=font(400,k.H*.11); spaced(x,'ALTUZ',k.W/2,by+k.H*.14,k.W*.05);
   x.textAlign='left'; x.fillStyle='#9ca1a9'; x.font=`400 ${k.H*.036}px 'IBM Plex Mono', monospace`; x.fillText(code,L,by+k.H*.24);
   x.font=font(400,k.H*.045); let y=by+k.H*.31; comp.forEach(l=>{ x.fillText(l,L,y); y+=k.H*.058; }); return tex(k.c); };
+A.neckTex=function(size){ const k=cv(6,5.2); const x=k.x; const t=tex(k.c);
+  const draw=(im)=>{ x.clearRect(0,0,k.W,k.H); x.fillStyle='#050506'; x.fillRect(3,3,k.W-6,k.H-6); const ink='#d6d9de'; x.strokeStyle='#8e939b'; x.lineWidth=2.2;
+    const my=k.H*.5, mx=k.W*.5;
+    x.beginPath(); x.moveTo(k.W*.08,my); x.lineTo(k.W*.92,my); x.stroke(); x.beginPath(); x.moveTo(mx,my+k.H*.06); x.lineTo(mx,k.H*.94); x.stroke();
+    if(im){ const lw=k.W*.56, lh=lw*im.naturalHeight/im.naturalWidth; const t2=document.createElement('canvas'); t2.width=k.W; t2.height=k.H; const c2=t2.getContext('2d'); c2.drawImage(im,(k.W-lw)/2,(my-lh)/2,lw,lh); c2.globalCompositeOperation='source-in'; c2.fillStyle=ink; c2.fillRect(0,0,k.W,k.H); x.drawImage(t2,0,0); }
+    else { x.fillStyle=ink; x.textAlign='center'; x.font=font(400,k.H*.2); spaced(x,'ALTUZ',mx,my*.62,k.W*.04); }
+    x.fillStyle=ink; x.textAlign='center'; x.font=font(400,k.H*.24); x.fillText(size,k.W*.29,my+(k.H-my)*.66); x.font=font(400,k.H*.15); x.fillText(A.num2||'1 / 100',k.W*.71,my+(k.H-my)*.62); t.needsUpdate=true; };
+  draw(null); const im=new Image(); A.pending=(A.pending||0)+1; im.onload=()=>{ draw(im); A.pending--; }; im.onerror=()=>{ A.pending--; }; im.src=window.ALTUZ_IMG.logo; return t; };
 /* back zip + 15 x 14 cm sealed bag outline (short) */
 A.zipTex=function(){ const w=16,h=15; const k=cv(w,h); const x=k.x; x.clearRect(0,0,k.W,k.H);
   x.strokeStyle='rgba(8,8,9,1)'; x.lineWidth=.16*PX; x.strokeRect(.5*PX,.4*PX,15*PX,14*PX); // sealed tape outline
@@ -301,12 +309,12 @@ A.buildTee=function(size,o){
   const YN=-90, YX=6, step=.5; const na=Math.round((YX-YN)/step)+1; const TA=new Float32Array(na), TB=new Float32Array(na);
   for(let i=0;i<na;i++){ const y=YX-i*step; const C=y>-27?2*T.chest:y>-45?lerp(2*T.chest,2*T.waist,smoothstep(-27,-45,y)):lerp(2*T.waist,2*T.hem,smoothstep(-45,-72,y)); const a=aFromPerimeter(C,R); TA[i]=a; TB[i]=a*R; }
   const prof=y=>{ const f=clamp((YX-y)/step,0,na-1.001); const i=Math.floor(f),t=f-i; return [TA[i]*(1-t)+TA[i+1]*t,TB[i]*(1-t)+TB[i+1]*t]; };
-  const xs=.9*T.F/2, slope=3.5/(xs-9), th=36*Math.PI/180, cs=Math.cos(th), sn=Math.sin(th);
-  const r0=9.6, rB=6.6, rE=5.9, T1=9, SL=o.sleeveLen||21.2, BEND=.012;
+  const xs=.9*T.F/2, slope=3.5/(xs-9), th=42*Math.PI/180, cs=Math.cos(th), sn=Math.sin(th);
+  const r0=8.6, rB=7.0, rE=7.4, T1=8, SL=o.sleeveLen||21.2, BEND=.006;
   const wy=(x,y)=>{ const u=Math.max(0,Math.abs(x)-18); return y+BEND*u*u; };
   const P0=s=>[s*19,-14.5,0], Dv=s=>[s*cs,-sn,0];
   const rr=t=>t<0?r0:t<T1?rB+(r0-rB)*Math.pow(1-t/T1,1.5):lerp(rB,rE,clamp((t-T1)/(SL-T1),0,1));
-  const sleeve=(x,y0,z,s)=>{ const y=wy(x,y0); const p=P0(s),d=Dv(s); const qx=x-p[0],qy=y-p[1],qz=z-p[2]; const t=qx*d[0]+qy*d[1]+qz*d[2]; const px=qx-t*d[0],py=qy-t*d[1],pz=qz-t*d[2]; return Math.max(Math.hypot(px,py,pz*1.22)-rr(t),-t-3); };
+  const sleeve=(x,y0,z,s)=>{ const y=wy(x,y0); const p=P0(s),d=Dv(s); const qx=x-p[0],qy=y-p[1],qz=z-p[2]; const t=qx*d[0]+qy*d[1]+qz*d[2]; const px=qx-t*d[0],py=qy-t*d[1],pz=qz-t*d[2]; return Math.max(Math.hypot(px,py,pz*1.4)-rr(t),-t-3); };
   const ytop=(x,z)=>-slope*Math.max(0,Math.abs(x)-9)-.5*Math.max(0,Math.abs(x)-xs)-(z>0?.012:.04)*z*z;
   const sdf=(x,y,z)=>{ const [a,b]=prof(y); const wall=ell(x,z,a,b); const torso=smax(wall,(y-ytop(x,z))*.9,2.5); let sl=Math.min(sleeve(x,y,z,1),sleeve(x,y,z,-1)); sl=smax(sl,(y-ytop(x,z)+.6)*.9,1.2); return smin(torso,sl,3.2); };
   const b0=13, hemY=z=>-(T.D+(T.E-T.D)*smoothstep(0,1,clamp((b0-z)/(2*b0),0,1)));
@@ -318,7 +326,7 @@ A.buildTee=function(size,o){
   const displace=(x,y,z,nx,ny,nz)=>{ let d=.46*(noise(x*.09,y*.055,z*.09)-.5)+.12*(noise(x*.31,y*.2,z*.31)-.5); const ax=Math.abs(x);
     if(ax<22){ const gth=smoothstep(-22,-64,y); d+=.34*gth*Math.sin(Math.atan2(z,x)*7+6*noise(x*.1,y*.05,z*.1)); }
     const dx=ax-17,dy=y+25,dist=Math.hypot(dx,dy),phi=Math.atan2(dy,dx); d+=.14*Math.exp(-dist/7)*Math.sin(phi*5+3*noise(x*.2,y*.2,z*.2))*clamp((ax-8)/6,0,1)*Math.abs(nz);
-    if(ax>24){ d+=.3*Math.sin(Math.atan2(y+22-.35*(ax-24),z)*3+3*noise(x*.1,y*.1,z*.1))*Math.min(1,(ax-22)/6)+.16*Math.sin((ax-18)*1.3+4*noise(x*.2,y*.2,z*.2)); }
+    if(ax>24){ d+=.1*Math.sin(Math.atan2(y+22-.35*(ax-24),z)*3+3*noise(x*.1,y*.1,z*.1))*Math.min(1,(ax-22)/6)+.05*Math.sin((ax-18)*1.3+4*noise(x*.2,y*.2,z*.2)); }
     return d*smoothstep(1,-5,y); };
   const edgeRadius=(mx,my,mz)=>(my>-14&&Math.abs(mx)<3)?[.5,.2]:[.3,.13];
   const ck='tee|'+size+'|'+h; A._sc=A._sc||{}; const shell=A._sc[ck]||(A._sc[ck]=A.buildShell({sdf,min:[-52,-80,-17],max:[52,6,17],h,clamp:clampFn,cut,displace,edgeRadius}));
@@ -350,13 +358,12 @@ A.assembleTee=function(T,size,white,shell,G){
   { const y=-hemSide+5+1.05; const c=ptAt(0,y,-1); add('slogan',A.makeDecal(shell,{c:c.c,n:c.n,w:30,h:2.1,lift:.04,minDot:.3,uf:arcAt(-1)}),slog); }
   const num=(A.num||'001/100');
   // neck label: silicone sticker (enlarged vs the 40 x 30 mm spec so it reads as a feature)
-  const labN=A.sticker(); { const w=8.6,h=w/A.imgAspect.sticker; const y=-(T.J+.9+h/2); const c=ptAt(0,y,-1); add('label-N',A.makeDecal(shell,{c:c.c,n:c.n,w:w,h:h,lift:.11,minDot:.5,uf:arcAt(-1)}),labN); }
   // front hem label: no patch, silver print straight on the fabric (wearer's right hem)
   const frontM=A.silver(A.frontMask()); mats.front=frontM;
   { const w=6.4,h=w/A.imgAspect.front; const y=-T.D+5+h/2; const c=ptAt(-8,y,1); const hit=probe([c.c[0],y,60],[0,0,-1]); add('label-H',A.makeDecal(shell,{c:hit?hit.p.toArray():c.c,n:hit?hit.n.toArray():c.n,w:w,h:h,lift:.05,minDot:.5}),frontM); }
   // inside information label, centred on the back, 22 mm under the perforation
-  const info=A.label(A.infoTex('ALT-D001-'+(white?'T02':'T01'),size,['Recycled polyester 94 %','Elastane 6 %','30 °C · no bleach','Made in [country]']),{metal:.05,rough:.7,inside:true}); mats.info=info;
-  { const y=-(13+8.4+2.2+3.75); const c=ptAt(0,y,-1); add('label-I',A.makeDecal(shell,{c:c.c,n:c.n,w:6,h:7.5,lift:.05,minDot:.3,inside:true,uf:arcAt(-1)}),info); }
+  const info=A.label(A.neckTex(size),{metal:.05,rough:.7,inside:true}); mats.info=info;
+  { const y=-(T.J+.8+2.6); const c=ptAt(0,y,-1); add('label-I',A.makeDecal(shell,{c:c.c,n:c.n,w:6,h:5.2,lift:.05,minDot:.3,inside:true,uf:arcAt(-1)}),info); }
   // TPU tape: shoulders and shifted side seams (50 mm towards the back)
   const tape=A.tape(); const rib=(name,samples,w)=>{ const geo=A.ribbon(probe,samples,w,.07); if(geo){ const m=new THREE.Mesh(geo,tape); m.name=name; grp.add(m); } };
   for(const s of [1,-1]){ const sm=[]; for(let x=9.6;x<=G.xs+.2;x+=.6) sm.push({o:[s*x,20,-1.2],d:[0,-1,0]}); rib('tape-shoulder',sm,1);
@@ -381,22 +388,25 @@ A.buildShort=function(size,o){
   const Ry=y=>y>-18?lerp(.66,rHip,smoothstep(0,-18,y)):lerp(rHip,.52,smoothstep(-18,-26,y));
   const prof=y=>{ const r=Ry(y); const a=aFromPerimeter(Cy(y),r); return [a,a*r]; };
   const rLeg=1.08, aL=aFromPerimeter(legC,rLeg), bL=aL*rLeg, xc=aHip-aL*.96-.9;
-  const fl=y=>lerp(.96,1,smoothstep(-12,-33,y));
+  const fl=y=>lerp(.97,1.12,smoothstep(-10,-34,y));
   const yc=z=>S.G+(S.H-S.G)*smoothstep(8,-8,z);
   const G0={xc};
-  const sdf=(x,y,z)=>{ const [a,b]=prof(Math.max(y,-28)); let pel=ell(x,z,a,b); pel=smax(pel,-yc(z)-y,2.5);
-    const f=fl(y); const lg=Math.min(ell(x-xc,z,aL*f,bL*f),ell(x+xc,z,aL*f,bL*f));
-    return smin(pel,smax(lg,y-4,.01),5); };
+  const sdf=(x0,y,z0)=>{ const k=smoothstep(-3,-24,y); const x=x0+1.1*k*(vnoise(x0*.06+3,y*.05,z0*.06)-.5)*2, z=z0+.9*k*(vnoise(x0*.06,y*.05+7,z0*.06+2)-.5)*2;
+    const [a,b]=prof(Math.max(y,-28)); let pel=ell(x,z,a,b); pel=smax(pel,-yc(z)-y,2.5);
+    const f=fl(y), cx=xc+.7*smoothstep(-12,-34,y), zs=.9*smoothstep(-6,-30,y); const lg=Math.min(ell(x-cx,z-zs*.3,aL*f,bL*f),ell(x+cx,z-zs*.3,aL*f,bL*f));
+    return smin(pel,smax(lg,y-4,.01),6); };
   const hemY=z=>-(S.D+.6+.6*clamp(-z/10,-1,1));
-  const clampFn=p=>{ let m=false; const hy=hemY(p[2]); if(p[1]<hy){ p[1]=hy; m=true; } if(p[1]>0){ p[1]=0; m=true; } return m; };
+  const hemY2=(x,z)=>{ const lx=Math.abs(x)-xc; const tl=Math.atan2(z,lx); return hemY(z)+.8*Math.sin(tl*2+.7)*(Math.abs(x)>3?1:0)+.35*Math.sin(tl*5+1.2); };
+  const clampFn=p=>{ let m=false; const hy=hemY2(p[0],p[2]); if(p[1]<hy){ p[1]=hy; m=true; } if(p[1]>0){ p[1]=0; m=true; } return m; };
   const slitTop=()=>hemY(0)+5;
   const cut=(x,y,z)=>Math.min(Math.abs(x)-17,.42-Math.abs(z+4),slitTop()-y);
-  const displace=(x,y,z,nx,ny,nz)=>{ let d=.5*(vnoise(x*.1,y*.07,z*.1)-.5)+.14*(vnoise(x*.3,y*.2,z*.3)-.5);
+  const displace=(x,y,z,nx,ny,nz)=>{ let d=.55*(vnoise(x*.08,y*.06,z*.08)-.5)+.16*(vnoise(x*.28,y*.2,z*.28)-.5);
     const th=Math.atan2(z,x); const lx=Math.abs(x)>3?(Math.abs(x)-G0.xc):x; const tl=Math.atan2(z,lx);
-    d+=.3*Math.sin(tl*7+6*vnoise(x*.12,y*.09,z*.12))*smoothstep(-10,-26,y)*(y>-34?1:0)*smoothstep(-34,-30,y)*0+.3*Math.sin(tl*7+6*vnoise(x*.12,y*.09,z*.12))*smoothstep(-10,-24,y);
-    d+=.16*Math.sin(th*30+3*vnoise(x*.2,y*.2,z*.2))*smoothstep(-4,-6,y)*smoothstep(-13,-7,y);
-    const dc=Math.hypot(x/1.8,(y+S.G)/7); d+=.34*Math.exp(-dc*.7)*Math.sin(Math.atan2(y+S.G,x)*5+1.3)*(nz>0?1:.7);
-    d-=.25*smoothstep(-28,-33,y)*(vnoise(x*.5,y*.5,z*.5)-.3);
+    d+=.55*Math.sin(tl*5+4*vnoise(x*.1,y*.05,z*.1))*smoothstep(-8,-24,y);
+    d+=.3*Math.sin(tl*9+3*vnoise(x*.15,y*.04,z*.15))*smoothstep(-12,-30,y);
+    d+=.2*Math.sin(th*34+3*vnoise(x*.2,y*.2,z*.2))*smoothstep(-4,-6,y)*smoothstep(-13,-7,y);
+    const dc=Math.hypot(x/1.8,(y+S.G)/7); d+=.4*Math.exp(-dc*.7)*Math.sin(Math.atan2(y+S.G,x)*5+1.3)*(nz>0?1:.7);
+    d-=.2*smoothstep(-28,-33,y)*(vnoise(x*.5,y*.5,z*.5)-.3);
     return d*smoothstep(-.5,-4.5,y); };
   const edgeRadius=(mx,my)=>my>-8?[.28,.2]:[.14,.07];
   const shell=A.buildShell({sdf,min:[-27,-40,-17],max:[27,3,17],h,clamp:clampFn,cut,displace,edgeRadius});
