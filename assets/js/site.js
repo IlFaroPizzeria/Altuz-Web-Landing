@@ -3,6 +3,10 @@
 'use strict';
 
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+/* Invitation link: ?ref=007 is kept in memory and sent with the request as "ref:007" (the member who invited gets credit). */
+const REF=(function(){ try{ const m=/^\d{3}$/.exec(new URLSearchParams(location.search).get('ref')||''); return m&&+m[0]>=1&&+m[0]<=300?m[0]:''; }catch(e){ return ''; } })();
+const markRef=function(){ if(!REF) return; const f=document.getElementById('ref'); if(f){ f.value='Invited by No. '+REF; f.readOnly=true; } };
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',markRef); else markRef();
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const easeOut=t=>1-Math.pow(1-t,3);
@@ -328,7 +332,7 @@ $('#regForm').addEventListener('submit',async e=>{
       if(!row||row.number==null){ er.textContent='No member with that ID.'; inp.focus(); return; }
       const dest=base+'#id='+encodeURIComponent(id); const name=esc(row.alias);
       sheet.classList.add('unlocked');
-      out.innerHTML='<div class="door-hi" role="status"><small>Door open</small><b>'+(name?'Welcome, '+name+'.':'Welcome.')+'</b><span>'+esc(row.rank||'Member')+' · No. '+esc(row.number)+' / 100</span></div><div class="door-bar" aria-hidden="true"><i></i></div><div class="door-act"><a class="dark" href="'+dest+'" rel="noopener">Enter now</a></div>';
+      out.innerHTML='<div class="door-hi" role="status"><small>Door open</small><b>'+(name?'Welcome, '+name+'.':'Welcome.')+'</b><span>'+esc(row.rank||'Member')+' · No. '+esc(row.number)+' / 300</span></div><div class="door-bar" aria-hidden="true"><i></i></div><div class="door-act"><a class="dark" href="'+dest+'" rel="noopener">Enter now</a></div>';
       try{ out.scrollIntoView({block:'end',behavior:RM?'auto':'smooth'}); }catch(_){}
       timer=setTimeout(()=>{ location.href=dest; },RM?400:1700);
     }catch(x){ er.textContent='We couldn’t reach the Registry. Try again in a moment.'; }
@@ -353,14 +357,14 @@ form.addEventListener('submit',async e=>{
   if(!$('#consent').checked){ err.textContent='Tick the box so we’re allowed to email you.'; $('#consent').focus(); return; }
   const pieces=$$('input[name=piece]:checked',form).map(i=>i.value);
   const nz=v=>{ v=v.trim(); return v?v:null; };
-  const p={p_email:email.toLowerCase(),p_alias:nz($('#alias').value),p_city:nz($('#city').value),p_when:$('#when').value,p_referrer:nz($('#ref').value),p_pieces:pieces,p_source:'web'};
+  const p={p_email:email.toLowerCase(),p_alias:nz($('#alias').value),p_city:nz($('#city').value),p_when:$('#when').value,p_referrer:(REF?('ref:'+REF):nz($('#ref').value)),p_pieces:pieces,p_source:'web'};
   if(p.p_alias) p.p_alias=p.p_alias.slice(0,24); if(p.p_city) p.p_city=p.p_city.slice(0,80); if(p.p_referrer) p.p_referrer=p.p_referrer.slice(0,120);
   const bot=$('#company').value.trim()!=='';
   btn.disabled=true; const label=btn.textContent; btn.textContent='Sending…';
   try{
     if(!bot){
       const row=await save(p);
-      if(row&&row.full){ btn.disabled=false; btn.textContent=label; err.textContent='All 100 numbers of Drop 001 have been drawn. Write to projectaltuz@gmail.com to join the reserve list.'; return; }
+      if(row&&row.full){ btn.disabled=false; btn.textContent=label; err.textContent='All 300 numbers of Drop 001 have been drawn. Write to projectaltuz@gmail.com to join the reserve list.'; return; }
       if(row&&row.number){ drawn=true; cur=row.number; setId(row.dni.replace(/^#/,''),row.number); }
       if(window.altuzTrack) window.altuzTrack('admission');
     }
