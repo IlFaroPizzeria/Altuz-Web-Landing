@@ -47,7 +47,7 @@
 <header class="top">
   <div class="top-in">
     <a class="brand" href="/" id="home" aria-label="Altuz, home"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><span>ALTUZ</span></a>
-    <div class="top-right"><button class="hlink" id="legalBtn" type="button" aria-expanded="false" aria-controls="legalPop">Legal</button><button class="dark small" type="button" data-open="admission"><span class="lg">Request admission</span><span class="sm">Apply</span></button></div>
+    <div class="top-right"><button class="hlink" id="legalBtn" type="button" aria-expanded="false" aria-controls="legalPop">Legal</button><button class="door-btn" type="button" data-open="door"><svg class="lk" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="10.5" width="14" height="10" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path class="shk" d="M8.2 10.5V8a3.8 3.8 0 0 1 7.6 0v2.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="15.4" r="1.3" fill="currentColor"/></svg><span class="lg">I have an ID</span><span class="sm">Members</span></button><button class="dark small" type="button" data-open="admission"><span class="lg">Request admission</span><span class="sm">Apply</span></button></div>
   </div>
 </header>
 
@@ -56,6 +56,7 @@
     <h1 class="x-wide rv">Membership, worn.</h1>
     <p class="lede rv" style="--d:.2s">Altuz is a private society of runners. Its tees and race shorts are numbered, reflective and released only to members. Wearing one means you were let in.</p>
     <div class="capture glass rv" id="capture" style="--d:.35s"><span class="cap-hint">Drop 001 · 100 members</span><button class="dark" type="button" data-open="number"><span class="lg">Request your ID</span><span class="sm">Request yours</span></button></div>
+    <button class="door-link rv" type="button" data-open="door" style="--d:.45s"><svg class="lk" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="10.5" width="14" height="10" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path class="shk" d="M8.2 10.5V8a3.8 3.8 0 0 1 7.6 0v2.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="15.4" r="1.3" fill="currentColor"/></svg><span>Already a member? <b>Enter with your ID</b></span></button>
     <p class="meta rv" style="--d:.5s"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><span>Drop 001 admits a hundred members. Requests close at pre-sale, in January 2027. We read every one and write to you before then.</span></p>
   </div>
   <div class="cardzone rv" style="--d:.15s">
@@ -188,6 +189,22 @@
       <button class="dark" type="button" id="numCta" data-open="admission">Get my ID</button>
       <p>Drawn when you join. It can’t be changed or chosen. <button class="link" type="button" data-open="registry">Check an ID in the Registry</button></p>
     </div>
+  </div>
+</section>
+
+<section class="sheet door" id="door" role="dialog" aria-modal="false" aria-labelledby="h-door" inert>
+  <div class="sheet-top"><svg class="logo" aria-hidden="true"><use href="#logo"/></svg><button class="x" type="button" data-close aria-label="Close"></button></div>
+  <div class="sheet-body">
+    <div class="door-seal pi" style="--i:0"><svg class="lk" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="10.5" width="14" height="10" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path class="shk" d="M8.2 10.5V8a3.8 3.8 0 0 1 7.6 0v2.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="15.4" r="1.3" fill="currentColor"/></svg><span>Members only</span></div>
+    <h2 class="x-wide pi" id="h-door" tabindex="-1">Show your ID.</h2>
+    <p class="p pi" style="--i:1">This door opens only for members of Drop 001. Your ID is eight digits and a letter, printed on your card. We check it against the Registry and take you straight to the Atelier.</p>
+    <form id="doorForm" class="pi" style="--i:2" novalidate>
+      <div class="field"><label for="doorId">Your ID</label><input id="doorId" name="doorId" type="text" maxlength="10" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text" placeholder="00000000T" aria-describedby="doorErr"></div>
+      <p class="err" id="doorErr" role="alert"></p>
+      <div class="door-act"><button class="dark" id="doorGo" type="submit">Enter the Atelier</button></div>
+    </form>
+    <div id="doorOut" class="door-out" aria-live="polite"></div>
+    <p class="door-no pi" style="--i:3">No ID yet? <button class="link" type="button" data-open="number">Request yours</button></p>
   </div>
 </section>
 

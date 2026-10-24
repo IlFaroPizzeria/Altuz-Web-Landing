@@ -231,7 +231,7 @@ document.addEventListener('click',e=>{
   if(o){
     const id=o.dataset.open;
     if(o.closest('.dock')&&current&&current.id===id){ closeSheet(); return; }
-    openSheet(id,{trigger:o,focus:id==='admission'?'#email':null}); return;
+    openSheet(id,{trigger:o,focus:id==='admission'?'#email':id==='door'?'#doorId':null}); return;
   }
   if(e.target.closest('[data-close]')) closeSheet();
 });
@@ -306,6 +306,36 @@ $('#regForm').addEventListener('submit',async e=>{
   }catch(x){ er.textContent='We couldn’t check the Registry right now.'; }
 });
 
+
+/* ---------- members' door: ID -> Registry check -> Atelier ---------- */
+(function(){
+  const LET='TRWAGMYFPDXBNJZSQVHLCKE', sheet=$('#door'), form=$('#doorForm'), inp=$('#doorId'), er=$('#doorErr'), out=$('#doorOut'), go=$('#doorGo'); let timer=0;
+  const esc=s=>String(s==null?'':s).replace(/[<>&"]/g,'');
+  const valid=s=>/^\d{8}[A-Z]$/.test(s)&&LET[parseInt(s.slice(0,8),10)%23]===s[8];
+  inp.addEventListener('input',()=>{ er.textContent=''; inp.value=inp.value.toUpperCase().replace(/[^0-9A-Z]/g,''); });
+  form.addEventListener('submit',async e=>{
+    e.preventDefault(); clearTimeout(timer); er.textContent=''; out.innerHTML=''; sheet.classList.remove('unlocked');
+    const id=inp.value.trim().toUpperCase().replace(/^#/,'');
+    if(!/^\d{8}[A-Z]$/.test(id)){ er.textContent='An ID is eight digits and a letter, like 00000000T.'; inp.focus(); return; }
+    if(!valid(id)){ er.textContent='No member with that ID.'; inp.focus(); return; }
+    const {url,key,h}=rcfg(); const base=String((window.ALTUZ_CONFIG||{}).atelierUrl||'').replace(/#.*$/,'');
+    if(!url||!key||!base){ er.textContent='The door is closed for now. Try again in a moment.'; return; }
+    go.disabled=true; const t0=go.textContent; go.textContent='Checking…';
+    try{
+      const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(),9000);
+      const r=await fetch(url+'/rest/v1/rpc/atelier_lookup',{method:'POST',headers:h,body:JSON.stringify({p_dni:id}),signal:ctl.signal}); clearTimeout(to);
+      if(!r.ok) throw 0; const d=await r.json(); const row=Array.isArray(d)?d[0]:d;
+      if(!row||row.number==null){ er.textContent='No member with that ID.'; inp.focus(); return; }
+      const dest=base+'#id='+encodeURIComponent(id); const name=esc(row.alias);
+      sheet.classList.add('unlocked');
+      out.innerHTML='<div class="door-hi" role="status"><small>Door open</small><b>'+(name?'Welcome, '+name+'.':'Welcome.')+'</b><span>'+esc(row.rank||'Member')+' · No. '+esc(row.number)+' / 100</span></div><div class="door-bar" aria-hidden="true"><i></i></div><div class="door-act"><a class="dark" href="'+dest+'" rel="noopener">Enter now</a></div>';
+      try{ out.scrollIntoView({block:'end',behavior:RM?'auto':'smooth'}); }catch(_){}
+      timer=setTimeout(()=>{ location.href=dest; },RM?400:1700);
+    }catch(x){ er.textContent='We couldn’t reach the Registry. Try again in a moment.'; }
+    finally{ go.disabled=false; go.textContent=t0; }
+  });
+})();
+
 /* ---------- admission requests ---------- */
 const form=$('#adm-form'), err=$('#err'), btn=$('#submit');
 async function save(p){
@@ -345,7 +375,7 @@ form.addEventListener('submit',async e=>{
 /* ---------- intro: headlights at night ---------- */
 const intro=$('#intro'), iwrap=$('#iwrap'), ibloom=$('#ibloom'), ibar=$('#ibar');
 const cones=[$('#cone1'),$('#cone2'),$('#cone3')], spots=[$('#spot1'),$('#spot2'),$('#spot3')];
-const TOKENS=['privileges','code','light','number','registry','admission'];
+const TOKENS=['privileges','code','light','number','registry','admission','door'];
 const REVEAL=4.3, END=5.8;
 let it0=0, iraf=0, started=false, revealed=false;
 /* three lights: two headlights from the lower corners and a short glint from above.
