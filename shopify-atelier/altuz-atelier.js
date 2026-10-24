@@ -159,7 +159,7 @@ function build(){
   const dock=el('nav','cdock glass'); dock.setAttribute('aria-label','Sections');
   NAMES.forEach((n,i)=>{ const b=el('button','',n); b.type='button'; b.addEventListener('click',()=>go(i)); dock.appendChild(b); }); app.appendChild(dock);
   const pg=(cls,d,lab,fn)=>{ const b=el('button','cpager glass '+cls); b.type='button'; b.setAttribute('aria-label',lab); b.appendChild(ARROW(d)); b.addEventListener('click',fn); app.appendChild(b); return b; };
-  cur=-1; scrollTo(0,0); PAGES[0].classList.add('on'); mark(0); watch(); paintPulse();
+  cur=-1; scrollTo(0,0); paintPulse(); intro();
 }
 function go(i){ i=clamp(i,0,PAGES.length-1); const p=PAGES[i]; if(p) p.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'}); }
 function mark(i){
@@ -185,9 +185,39 @@ function rollId(e,final,ms){
   if(!e) return; if(RM){ e.textContent=final; return; }
   const t0=performance.now(); const step=n=>{ const p=clamp((n-t0)/ms,0,1); let o=''; for(let i=0;i<final.length;i++){ o+=(p>(i+1)/(final.length+1))?final[i]:(i===8?LET[Math.floor(Math.random()*23)]:Math.floor(Math.random()*10)); } e.textContent=p<1?o:final; if(p<1) requestAnimationFrame(step); }; requestAnimationFrame(step);
 }
+
+/* ---------- opening: slow, light, name + ID ---------- */
+let introTimers=[];
+function intro(){
+  introDone=false; document.body.classList.add('cin'); introTimers.forEach(clearTimeout); introTimers=[];
+  const old=$('#cintro'); if(old) old.remove();
+  const it=el('div','cintro'); it.id='cintro'; it.setAttribute('aria-live','polite');
+  const box=el('div','ci'); box.appendChild(svgLogo('logo ci-logo'));
+  const l1=el('div','ci-l1',''); const big=el('div','ci-id chrome',myId); big.style.opacity=0; const l2=el('div','ci-l2','');
+  box.appendChild(l1); box.appendChild(big); box.appendChild(l2); it.appendChild(box);
+  const bar=el('div','ci-bar'); const bi=el('i'); bar.appendChild(bi); it.appendChild(bar);
+  const sk=el('button','btn ghost small ci-skip','Enter'); sk.type='button'; sk.addEventListener('click',finishIntro); it.appendChild(sk);
+  $('#app').appendChild(it);
+  const L1=MEMBER.name?('Identity confirmed · '+MEMBER.name):'Identity confirmed', L2='No. '+pad(MEMBER.n)+' of '+TOTAL+' · The Altuz community';
+  requestAnimationFrame(()=>it.classList.add('run'));
+  const T=(f,ms)=>introTimers.push(setTimeout(f,RM?Math.min(ms,300):ms));
+  if(!RM){ bi.style.transition='transform 7.6s linear'; requestAnimationFrame(()=>{ bi.style.transform='scaleX(1)'; }); }
+  T(()=>{ l1.textContent=L1; l1.classList.add('in'); },900);
+  T(()=>{ big.style.transition='opacity 1.6s'; big.style.opacity=1; rollId(big,myId,2200); },2200);
+  T(()=>{ l2.textContent=L2; l2.classList.add('in'); },4800);
+  T(finishIntro,8000);
+}
+function finishIntro(){
+  if(introDone) return; introDone=true; introTimers.forEach(clearTimeout);
+  const it=$('#cintro'); if(it){ it.classList.add('off'); setTimeout(()=>it.remove(),1800); }
+  document.body.classList.remove('cin'); scrollTo(0,0);
+  PAGES.forEach(p=>p.classList.remove('on'));
+  setTimeout(()=>{ if(PAGES[0]) PAGES[0].classList.add('on'); mark(0); watch(); },RM?0:500);
+}
+addEventListener('keydown',e=>{ if((e.key==='Escape'||e.key==='Enter')&&!introDone&&$('#cintro')) finishIntro(); });
 function logout(){
   ['#comm','.ctop','.cdock','.cpager','#cbg'].forEach(s=>$$(s).forEach(e=>e.remove()));
-  PAGES=[]; cur=0; mapLit=false; if(io) io.disconnect(); scrollTo(0,0);
+  PAGES=[]; cur=0; mapLit=false; if(io) io.disconnect(); introTimers.forEach(clearTimeout); introDone=true; document.body.classList.remove('cin'); const ci=$('#cintro'); if(ci) ci.remove(); scrollTo(0,0);
   const g=$('#gate'); g.classList.remove('out'); idIn.value=''; gErr.textContent=''; setTimeout(()=>{ try{idIn.focus({preventScroll:true})}catch(e){} },400);
 }
 })();
