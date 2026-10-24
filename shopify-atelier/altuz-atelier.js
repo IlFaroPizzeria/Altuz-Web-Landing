@@ -135,17 +135,18 @@ function buildStory(){
   // outfit cards
   const of=$('#outfit'); of.innerHTML='';
   PIECES.forEach(p=>{ const c=document.createElement('div'); c.className='pc'; c.dataset.k=p.key;
-    c.innerHTML='<div><small>'+p.code+' · '+p.colour+'</small><h4>'+p.name+'</h4>'+priceTag(p.key)+'</div><div class="sizes" role="group" aria-label="Size for '+p.short+'">'+['S','M','L','XL'].map(s=>'<button type="button" aria-pressed="'+(s==='M')+'" data-s="'+s+'">'+s+'</button>').join('')+'</div><button class="btn ghost add" type="button">Add to my ID</button>';
+    c.innerHTML='<div><small>'+p.code+' · '+p.colour+'</small><h4>'+p.name+'</h4>'+priceTag(p.key)+'</div><div class="sizes" role="group" aria-label="Size for '+p.short+'">'+['S','M','L','XL'].map(s=>'<button type="button" aria-pressed="'+(s==='M')+'" data-s="'+s+'">'+s+'</button>').join('')+'</div><button class="ibtn" type="button">Inspect in 360°</button><button class="btn ghost add" type="button">Add to my ID</button>';
     of.appendChild(c); });
   of.onclick=e=>{
     const card=e.target.closest('.pc'); if(!card) return; const k=card.dataset.k;
+    if(!e.target.closest('.sizes button')&&!e.target.closest('.add')){ openInspect(k); return; }
     const sb=e.target.closest('.sizes button'); if(sb){ sizes[k]=sb.dataset.s; refreshPrices(); $$('.sizes button',card).forEach(b=>b.setAttribute('aria-pressed',b===sb?'true':'false')); return; }
     if(e.target.closest('.add')){ picked[k]=!picked[k]; syncBag(); }
   };
 }
 setTimeout(refreshPrices,0);
 function logout(){
-  started=false; introDone=false; clearTimeout(capTimer); capKey=''; REV.clear(); enterKey=''; state.ch=0;
+  if(INSP) closeInspect(); started=false; introDone=false; clearTimeout(capTimer); capKey=''; REV.clear(); enterKey=''; state.ch=0;
   document.body.classList.remove('ready','lock'); $('#app').classList.remove('on');
   const it=$('#intro'); it.style.display='none'; it.classList.remove('on','off'); $('#skip').hidden=true;
   ['hero','cap','sheet','outfit','finalBar'].forEach(id=>$('#'+id).classList.remove('on'));
@@ -294,9 +295,17 @@ function initGL(){
 }
 function resize(){ if(!renderer) return; const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
 function bindDrag(cv){
-  let down=false,lx=0; const onDown=e=>{ down=true; lx=e.clientX; };
-  cv.addEventListener('pointerdown',onDown); addEventListener('pointerup',()=>{ down=false; lastDrag=performance.now(); }); addEventListener('pointermove',e=>{ if(!down) return; yawDrag+=(e.clientX-lx)*.01; lx=e.clientX; lastDrag=performance.now(); });
+  let down=false,lx=0,ly=0,moved=0,hv=0;
+  cv.addEventListener('pointerdown',e=>{ down=true; lx=e.clientX; ly=e.clientY; moved=0; if(INSP) iAuto=false; });
+  addEventListener('pointerup',e=>{ const was=down; down=false; lastDrag=performance.now();
+    if(was&&moved<6&&!INSP&&e.target===cv&&CH[state.ch]&&CH[state.ch].beats[0].final){ const k=pickGarment(e); if(k) openInspect(k); } });
+  addEventListener('pointermove',e=>{
+    if(!down){ if(!INSP&&e.target===cv&&CH[state.ch]&&CH[state.ch].beats[0].final&&e.timeStamp-hv>90){ hv=e.timeStamp; cv.style.cursor=pickGarment(e)?'pointer':''; } return; }
+    const dx=e.clientX-lx, dy=e.clientY-ly; lx=e.clientX; ly=e.clientY; moved+=Math.abs(dx)+Math.abs(dy);
+    if(INSP){ iAz-=dx*.45; iEl=clamp(iEl+dy*.25,-12,55); } else yawDrag+=dx*.01; lastDrag=performance.now(); });
+  cv.addEventListener('wheel',e=>{ if(!INSP) return; e.preventDefault(); const B=IBASE[INSP]; iDt=clamp(iDt*(1+e.deltaY*.0012),B.min,B.max); iAuto=false; },{passive:false});
 }
+
 
 /* ---------- scroll → state ---------- */
 let sY=0, introDone=false;
@@ -326,7 +335,7 @@ const wpos=(g,v)=>{ const G=garments[g]; return new THREE.Vector3(G.position.x+v
 let capKey='',capTimer=0;
 function setCaption(ci,bi){
   const key=ci+':'+bi; if(key===capKey) return; capKey=key; enterKey=key; enterT=performance.now(); const c=CH[ci], b=c.beats[bi]; const cap=$('#cap'), sheet=$('#sheet'), hero=$('#hero'), of=$('#outfit'), fb=$('#finalBar');
-  cap.classList.remove('on'); sheet.classList.remove('on'); hero.classList.toggle('on',!!b.hero&&introDone); of.classList.toggle('on',!!b.final); fb.classList.toggle('on',!!b.final);
+  cap.classList.remove('on'); sheet.classList.remove('on'); hero.classList.toggle('on',!!b.hero&&introDone); of.classList.toggle('on',!!b.final&&!INSP); fb.classList.toggle('on',!!b.final&&!INSP);
   if(!RM&&ci>0) $('#flare').classList.remove('go'),void $('#flare').offsetWidth,$('#flare').classList.add('go'); flash=1;
   $$('.hs').forEach(h=>h.classList.remove('on'));
   clearTimeout(capTimer);
@@ -336,6 +345,49 @@ function setCaption(ci,bi){
     (b.hs||[]).forEach(h=>{ const el=hsEls[(c.g==='teeW'?'teeB':c.g)+':'+h]; if(el) el.classList.add('on'); });
   },RM?0:320);
 }
+/* ---------- inspect one piece in 360° ---------- */
+let INSP=null, iAz=0, iEl=8, iD=20, iDt=20, iAuto=true, inspEl=null;
+const IBASE={teeB:{t:[0,36,0],d:19,min:8,max:30},teeW:{t:[0,36,0],d:19,min:8,max:30},short:{t:[0,-14,0],d:10.5,min:4.5,max:16}};
+function inspShot(){ const B=IBASE[INSP], m=narrow()?1.35:1; return {az:iAz,el:iEl,d:iD*m,t:B.t,fov:30,sx:0,sy:narrow()?.1:.02}; }
+function inspBuild(){
+  if(inspEl) return inspEl; const el=document.createElement('aside'); el.id='inspect'; el.setAttribute('aria-live','polite');
+  el.innerHTML='<div class="ih"><small></small><h3></h3><span class="ip"></span></div><div class="is"><div class="sizes" role="group" aria-label="Size"></div><button class="btn add" type="button">Add to my ID</button></div><div class="iz"><button type="button" data-z="-1" aria-label="Zoom out">−</button><button type="button" data-z="1" aria-label="Zoom in">+</button></div><button class="ib" type="button">Back to the outfit</button><p class="ih2">Drag to turn · scroll to zoom · Esc to close</p>';
+  $('#app').appendChild(el); inspEl=el;
+  el.addEventListener('click',e=>{
+    if(!INSP) return; const k=INSP;
+    const sb=e.target.closest('.sizes button'); if(sb){ sizes[k]=sb.dataset.s; refreshPrices(); inspFill(); $$('#outfit .pc[data-k="'+k+'"] .sizes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===sizes[k]?'true':'false')); return; }
+    if(e.target.closest('.add')){ picked[k]=!picked[k]; syncBag(); inspFill(); return; }
+    const z=e.target.closest('.iz button'); if(z){ const B=IBASE[k]; iDt=clamp(iDt*(z.dataset.z==='1'?.8:1.25),B.min,B.max); iAuto=false; return; }
+    if(e.target.closest('.ib')) closeInspect();
+  });
+  return el;
+}
+function inspFill(){
+  const k=INSP, P=PIECES.find(p=>p.key===k), el=inspBuild(); if(!P) return;
+  $('small',el).textContent=P.code+' · '+P.colour; $('h3',el).textContent=P.name;
+  const v=variantOf(k); $('.ip',el).textContent=v?(money(v.price)+(v.available?'':' · sold out')):'';
+  $('.sizes',el).innerHTML=['S','M','L','XL'].map(s=>'<button type="button" aria-pressed="'+(s===sizes[k])+'" data-s="'+s+'">'+s+'</button>').join('');
+  $('.add',el).textContent=picked[k]?'Added to my ID':'Add to my ID';
+}
+function openInspect(k){
+  if(!glOK||!introDone||!garments[k]||INSP) return;
+  INSP=k; iAz=cam.az; iEl=8; iD=iDt=IBASE[k].d; iAuto=true; inspFill(); const el=inspBuild();
+  document.body.classList.add('insp'); $('#outfit').classList.remove('on'); $('#finalBar').classList.remove('on'); $('#cap').classList.remove('on');
+  ['teeB','teeW','short'].forEach(g=>{ tAppear[g]=g===k?1:0; if(g===k) garments[g].userData.tx=0; });
+  const cv=$('#gl'); if(cv) cv.style.touchAction='none'; requestAnimationFrame(()=>el.classList.add('on'));
+}
+function closeInspect(){
+  if(!INSP) return; INSP=null; const el=inspEl; if(el) el.classList.remove('on'); document.body.classList.remove('insp');
+  const cv=$('#gl'); if(cv) cv.style.touchAction=''; yawDrag=0;
+  if(CH[state.ch]&&CH[state.ch].beats[0].final){ $('#outfit').classList.add('on'); $('#finalBar').classList.add('on'); }
+  showGarments(state.ch);
+}
+addEventListener('keydown',e=>{ if(e.key==='Escape'&&INSP) closeInspect(); });
+function pickGarment(e){
+  if(!glOK||!renderer) return null; const rc=new THREE.Raycaster(); rc.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight*2-1)),camera);
+  const gs=['teeB','teeW','short'].map(k=>garments[k]).filter(g=>g&&g.visible); const hit=rc.intersectObjects(gs,true)[0]; if(!hit) return null;
+  let o=hit.object; while(o){ const k=Object.keys(garments).find(k=>garments[k]===o); if(k) return k; o=o.parent; } return null;
+}
 function showGarments(ci){
   const c=CH[ci]; ['teeB','teeW','short'].forEach(k=>{ tAppear[k]=(c.g===k||c.g==='all')?1:0; });
   const sp=c.g==='all'?9.4:0; if(garments.teeB){ garments.teeB.userData.tx=-sp; garments.teeW.userData.tx=0; garments.short.userData.tx=sp; ['teeB','teeW','short'].forEach(k=>{ if(c.g!=='all') garments[k].userData.tx=0; }); }
@@ -344,20 +396,20 @@ let last=performance.now(), scrollLocked=true, curYaw=0;
 function loop(now){
   requestAnimationFrame(loop); const dt=Math.min(.05,(now-last)/1000); last=now;
   if(!started) return;
-  const {ci,p}=read(); const sh=targetShot(ci,p);
+  const {ci,p}=read(); const sh0=targetShot(ci,p); let sh=sh0; if(INSP){ if(iAuto) iAz+=dt*14; iD=lerp(iD,iDt,RM?1:1-Math.exp(-dt*6)); sh=Object.assign({},sh0,inspShot()); }
   if(state.ch!==ci){ if(glOK) showGarments(ci); state.ch=ci; }
   setCaption(ci,sh.beat); gate(now);
   if(ci!==lastCi){ lastCi=ci; DOTS.forEach((d,i)=>d.classList.toggle('on',i===ci)); }
   if(!glOK) return;
   const k=RM?1:1-Math.exp(-dt*3.4);
   cam.az=lerp(cam.az,sh.az,k); cam.el=lerp(cam.el,sh.el,k); cam.d=lerp(cam.d,sh.d,k); cam.fov=lerp(cam.fov,sh.fov,k); cam.sx=lerp(cam.sx,sh.sx,k); cam.sy=lerp(cam.sy,sh.sy,k);
-  const g0=CH[ci].g==='all'?'teeW':CH[ci].g; const T=wpos(g0,sh.t); cam.tx=lerp(cam.tx,T.x,k); cam.ty=lerp(cam.ty,T.y,k); cam.tz=lerp(cam.tz,T.z,k);
+  const g0=INSP||(CH[ci].g==='all'?'teeW':CH[ci].g); const T=wpos(g0,sh.t); cam.tx=lerp(cam.tx,T.x,k); cam.ty=lerp(cam.ty,T.y,k); cam.tz=lerp(cam.tz,T.z,k);
   const breathe=RM?0:Math.sin(now/2600)*.12; const az=(cam.az+breathe*6)*Math.PI/180, el=(cam.el+breathe)*Math.PI/180;
   camera.position.set(cam.tx+cam.d*Math.sin(az)*Math.cos(el),cam.ty+cam.d*Math.sin(el),cam.tz+cam.d*Math.cos(az)*Math.cos(el)); camera.lookAt(cam.tx,cam.ty,cam.tz);
   camera.fov=cam.fov; const W=innerWidth,H=innerHeight; if(Math.abs(cam.sx)>.001||Math.abs(cam.sy)>.001) camera.setViewOffset(W,H,cam.sx*W,cam.sy*H,W,H); else camera.clearViewOffset(); camera.updateProjectionMatrix();
   if(now-lastDrag>1800) yawDrag*=Math.exp(-dt*1.6);
   flash=Math.max(0,flash-dt*.9);
-  Object.keys(garments).forEach(key=>{ const G=garments[key]; const want=tAppear[key]; G.userData.s=lerp(G.userData.s??(key==='teeB'?1:0),want,RM?1:1-Math.exp(-dt*5)); const s=G.userData.s; G.visible=s>.02; G.scale.setScalar(.1*(.9+.1*s)); const tx=G.userData.tx||0; G.position.x=lerp(G.position.x,tx,1-Math.exp(-dt*3)); G.rotation.y=(CH[ci].g==='all'?Math.sin(now/2600+key.length*1.7)*.42:0)+yawDrag*(CH[ci].g===key?1:0); G.position.y=(key==='short'?1.4:-3.5)+(RM?0:Math.sin(now/1900+key.length)*.05);
+  Object.keys(garments).forEach(key=>{ const G=garments[key]; const want=tAppear[key]; G.userData.s=lerp(G.userData.s??(key==='teeB'?1:0),want,RM?1:1-Math.exp(-dt*5)); const s=G.userData.s; G.visible=s>.02; G.scale.setScalar(.1*(.9+.1*s)); const tx=G.userData.tx||0; G.position.x=lerp(G.position.x,tx,1-Math.exp(-dt*3)); G.rotation.y=INSP?0:(CH[ci].g==='all'?Math.sin(now/2600+key.length*1.7)*.42:0)+yawDrag*(CH[ci].g===key?1:0); G.position.y=(key==='short'?1.4:-3.5)+(RM?0:Math.sin(now/1900+key.length)*.05);
     if(G.visible){ if(!G.userData.rm||G.userData.rmN!==G.children.length){ const L=[]; G.traverse(o=>{ if(o.material&&o.material.userData&&o.material.userData.retro) L.push(o.material); }); G.userData.rm=L; G.userData.rmN=G.children.length; } const ei=.06+flash*1.6+(Math.sin(now/1700)*.5+.5)*.12; G.userData.rm.forEach(m=>{ m.emissiveIntensity=ei; }); } });
   // hotspots
   const bi=sh.beat, b=CH[ci].beats[bi];
