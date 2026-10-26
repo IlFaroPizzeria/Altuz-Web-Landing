@@ -360,3 +360,25 @@ body.cin{overflow:hidden!important}
   .board{padding:14px;border-radius:22px}
   .bgrid .c{font-size:9px;border-radius:6px}
 }
+
+/* ===== v4: green = free, red = taken; members list ===== */
+.reg .d{background:rgba(46,160,96,.34);box-shadow:inset 0 0 0 1px rgba(30,130,76,.55)}
+.reg .d.t{background:linear-gradient(180deg,#d9534a,#b3261e);box-shadow:inset 0 0 0 1px rgba(120,20,16,.35)}
+.reg .d.f{box-shadow:inset 0 0 0 1.5px rgba(21,23,26,.6)}
+.reg .d.me{background:#fff;box-shadow:0 0 0 2px var(--graphite),0 0 0 6px rgba(21,23,26,.14)}
+.key i.free{background:rgba(46,160,96,.45);box-shadow:inset 0 0 0 1px rgba(30,130,76,.7)}
+.key i.taken{background:#c43a31;box-shadow:none}
+.mpanel{padding:clamp(16px,2vw,26px);border-radius:28px;margin-top:clamp(14px,2.4vh,26px)}
+.mhd{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+.mhd b{font:800 clamp(34px,4vw,54px)/1 var(--display);font-variation-settings:"wdth" 125;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.mhd span{color:var(--steel);font-size:15px}
+.mlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;max-height:calc(100svh - 450px);min-height:120px;overflow-y:auto;padding-right:6px;scrollbar-width:thin;scrollbar-color:rgba(21,23,26,.25) transparent}
+.mrow{display:grid;grid-template-columns:10px auto 1fr auto;align-items:center;gap:10px;padding:11px 14px;border-radius:16px;background:rgba(255,255,255,.6);box-shadow:inset 0 0 0 1px rgba(21,23,26,.08)}
+.mrow i{width:9px;height:9px;border-radius:50%;background:#c43a31}
+.mrow b{font:760 15px/1 var(--display);font-variation-settings:"wdth" 118;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.mrow .mname{font-size:14px;color:var(--steel);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.mrow em{font-style:normal;font:500 12.5px/1 var(--display);letter-spacing:.08em;color:var(--mist);font-variant-numeric:tabular-nums}
+.mrow.me{background:linear-gradient(180deg,#30353b,#121417);box-shadow:none}
+.mrow.me b,.mrow.me .mname{color:#f3f4f6}.mrow.me em{color:#b7bdc5}
+.mempty{grid-column:1/-1;color:var(--mist);font-size:14px;padding:8px 2px}
+@media(max-width:820px){.mlist{grid-template-columns:1fr;max-height:calc(100svh - 360px)}}

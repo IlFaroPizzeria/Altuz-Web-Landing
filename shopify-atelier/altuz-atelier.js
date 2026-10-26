@@ -11,7 +11,7 @@ const SITE='https://altuz-ten.vercel.app/';
 const TOTAL=300, WAVES=[100,200,300];           // access waves by position in line (edit here)
 const pad=n=>String(n).padStart(3,'0');
 const el=(tag,cls,txt)=>{ const e=document.createElement(tag); if(cls) e.className=cls; if(txt!==undefined) e.textContent=txt; return e; };
-let myId=SAMPLE, started=false, introDone=false, MEMBER={n:1,rank:'Founder',name:'',invites:0,pos:0,joined:0}, PULSE=null, PIECES=null;
+let myId=SAMPLE, started=false, introDone=false, MEMBER={n:1,rank:'Founder',name:'',invites:0,pos:0,joined:0}, PULSE=null, MEMBERS=null;
 
 /* ---------- gate ---------- */
 const idIn=$('#idIn'), gErr=$('#gErr');
@@ -54,15 +54,14 @@ function login(id,row){
   $('#gate').classList.add('out');
   build();
   rpc('community_pulse').then(p=>{ PULSE=p&&typeof p==='object'?p:null; paintPulse(); }).catch(()=>{ paintPulse(); });
-  rpc('community_pieces').then(p=>{ PIECES=p&&typeof p==='object'?p:null; paintPieces(); }).catch(()=>{});
+  rpc('community_members').then(p=>{ MEMBERS=Array.isArray(p)?p:null; paintMembers(); }).catch(()=>{});
 }
 
 /* ---------- community pages (one screen each, no scroll) ---------- */
 const NS='http://www.w3.org/2000/svg';
 const svgLogo=cls=>{ const lg=document.createElementNS(NS,'svg'); lg.setAttribute('class',cls||'logo'); lg.setAttribute('aria-hidden','true'); const u=document.createElementNS(NS,'use'); u.setAttribute('href','#logo'); lg.appendChild(u); return lg; };
 const ARROW=d=>{ const s=document.createElementNS(NS,'svg'); s.setAttribute('viewBox','0 0 24 24'); s.setAttribute('fill','none'); s.setAttribute('stroke','currentColor'); s.setAttribute('stroke-width','1.8'); s.setAttribute('stroke-linecap','round'); s.setAttribute('stroke-linejoin','round'); const p=document.createElementNS(NS,'path'); p.setAttribute('d',d); s.appendChild(p); return s; };
-const NAMES=['You','Community','Pieces','The room','Your number','Access'];
-const PRODUCTS=[['tee_black','Black tee'],['tee_white','White tee'],['short','Race short']];
+const NAMES=['You','Community','Members','The room','Your number','Access'];
 let PAGES=[], cur=-1, lockNav=false, mapLit=false;
 
 function bgBuild(){
@@ -116,20 +115,17 @@ function build(){
   w=page(' two'); const rp=head(w,'The community','Three hundred of us. One number each.','Every light is someone’s seat at the table. Yours is marked.');
   const cnt=el('div','counter'); const cn=el('b','chrome','0'); cn.id='cInside'; cnt.appendChild(cn); cnt.appendChild(el('span','','inside right now')); const cl=el('em','',''); cl.id='cLeft'; cnt.appendChild(cl); rp.appendChild(rv(cnt,.24));
   const rw=el('div','regwrap glass'); rv(rw,.2);
-  const reg=el('div','reg'); reg.id='reg'; reg.setAttribute('role','img'); reg.setAttribute('aria-label','The registry of 300 numbers. Lit numbers are taken. Yours is marked.');
+  const reg=el('div','reg'); reg.id='reg'; reg.setAttribute('role','img'); reg.setAttribute('aria-label','The 300 numbers. Green is free, red is taken. Yours is marked.');
   for(let i=1;i<=TOTAL;i++){ const d=el('span','d'+(i<=2?' f':'')+(i===MEMBER.n?' me':'')); d.title=pad(i); reg.appendChild(d); }
   rw.appendChild(reg);
-  const key=el('div','key'); [['f','Founders · 001–002'],['','Origin · 003–100'],['','Circle · 101–300'],['me','You']].forEach(a=>{ const k=el('span','k'); k.appendChild(el('i',a[0])); k.appendChild(document.createTextNode(a[1])); key.appendChild(k); }); rw.appendChild(key);
+  const key=el('div','key'); [['free','Free'],['taken','Taken'],['me','You']].forEach(a=>{ const k=el('span','k'); k.appendChild(el('i',a[0])); k.appendChild(document.createTextNode(a[1])); key.appendChild(k); }); rw.appendChild(key);
   w.appendChild(rw);
 
-  /* 3 · the pieces already chosen */
-  w=page(); head(w,'The pieces','Already chosen.','Three pieces, each numbered 001 to 100. Every lit number belongs to a member who has already picked it. Yours is ringed.');
-  const boards=el('div','boards');
-  PRODUCTS.forEach((pr,bi)=>{ const b=el('div','board glass'); rv(b,.2+bi*.1);
-    const hd=el('div','bhd'); hd.appendChild(el('h3','',pr[1])); const cn2=el('span','bcount','—'); cn2.id='bc_'+pr[0]; hd.appendChild(cn2); b.appendChild(hd);
-    const g=el('div','bgrid'); g.id='bg_'+pr[0]; for(let n=1;n<=100;n++){ const c=el('span','c'+(n===MEMBER.n?' me':''),pad(n)); c.dataset.n=n; g.appendChild(c); } b.appendChild(g);
-    boards.appendChild(b); });
-  w.appendChild(boards);
+  /* 3 · who is already inside (from the Supabase list) */
+  w=page(); head(w,'The members','Already inside.','These are the runners who already hold a number. Their IDs stay half hidden. Yours is marked.');
+  const mp=el('div','mpanel glass'); rv(mp,.2);
+  const mh=el('div','mhd'); mh.appendChild(el('b','chrome','—')).id='mCount'; mh.appendChild(el('span','','members inside')); mp.appendChild(mh);
+  const ml=el('div','mlist'); ml.id='mlist'; mp.appendChild(ml); w.appendChild(mp);
 
   /* 4 · the room */
   w=page(); head(w,'Our house','Not everyone gets in.','It’s small on purpose, so we can know every one of you by number.');
@@ -169,16 +165,20 @@ function build(){
   /* dock */
   const dock=el('nav','cdock glass'); dock.setAttribute('aria-label','Sections');
   NAMES.forEach((n,i)=>{ if(!i) return; const b=el('button','',n); b.type='button'; b.dataset.i=i; b.addEventListener('click',()=>go(i)); dock.appendChild(b); }); app.appendChild(dock);
-  cur=-1; scrollTo(0,0); paintPulse(); paintPieces(); intro();
+  cur=-1; scrollTo(0,0); paintPulse(); paintMembers(); intro();
 }
 function go(i){ const p=PAGES[clamp(i,0,PAGES.length-1)]; if(p) p.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'}); }
 function mark(i){ if(i===cur) return; cur=i; $$('.cdock button').forEach(b=>b.setAttribute('aria-current',String(+b.dataset.i===i))); if(i===1&&!mapLit) lightMap(); }
 let io=null;
 function watch(){ if(io) io.disconnect(); io=new IntersectionObserver(es=>{ es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('on'); const k=PAGES.indexOf(e.target); if(e.intersectionRatio>=.5||k===0) mark(k); } }); },{threshold:[.2,.5]}); PAGES.forEach(p=>io.observe(p)); }
-function paintPieces(){
-  PRODUCTS.forEach(pr=>{ const arr=PIECES&&Array.isArray(PIECES[pr[0]])?PIECES[pr[0]].map(Number):null; const g=$('#bg_'+pr[0]), c=$('#bc_'+pr[0]); if(!g) return;
-    if(!arr){ if(c) c.textContent='—'; return; } const S=new Set(arr.filter(n=>n>=1&&n<=100));
-    $$('.c',g).forEach(x=>x.classList.toggle('t',S.has(+x.dataset.n))); if(c) c.textContent=S.size+' / 100'; });
+function paintMembers(){
+  const box=$('#mlist'); if(!box) return; box.textContent='';
+  const arr=MEMBERS&&Array.isArray(MEMBERS)?MEMBERS:null; const c=$('#mCount');
+  if(!arr){ if(c) c.textContent='—'; box.appendChild(el('p','mempty','The list is loading.')); return; }
+  if(c) c.textContent=String(arr.length);
+  arr.forEach(m=>{ const n=parseInt(m.n,10); if(!(n>=1)) return; const me=n===MEMBER.n; const r=el('div','mrow'+(me?' me':'')); r.appendChild(el('i'));
+    const num=el('b','',pad(n)); r.appendChild(num); const nm=el('span','mname',me?'You':(clean(m.alias)||'Member')); r.appendChild(nm); r.appendChild(el('em','',String(m.id||'').replace(/[^0-9A-Z•*]/gi,''))); box.appendChild(r); });
+  if(!arr.length) box.appendChild(el('p','mempty','No one yet. You are the first.'));
 }
 function taken(){ const t=PULSE&&Array.isArray(PULSE.taken)?PULSE.taken:[]; return t.map(Number).filter(n=>n>=1&&n<=TOTAL); }
 function lightMap(){ mapLit=true; const T=new Set(taken()); T.add(1); T.add(2); T.add(MEMBER.n); $$('#reg .d').forEach((d,i)=>{ if(T.has(i+1)) setTimeout(()=>d.classList.add('t'),RM?0:350+Math.min(1800,i*6)); }); }

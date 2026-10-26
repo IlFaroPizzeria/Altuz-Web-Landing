@@ -1,0 +1,54 @@
+/* ALTUZ · whole Shopify store in the landing's language: white ground, brushed stripes, glass, Archivo/Jost.
+   Loaded from the theme with one line (see STORE.md). Safe to load on top of any Dawn/Horizon-based theme. */
+:root{--az-bg:#fbfbfc;--az-ink:#15171a;--az-steel:#4b5158;--az-mist:#6f757c;--az-line:rgba(21,23,26,.1);
+  --az-display:'Archivo','Helvetica Neue',Arial,sans-serif;--az-mark:'Jost','Futura','Century Gothic',sans-serif;--az-ease:cubic-bezier(.22,1,.36,1)}
+html{background:var(--az-bg)!important;scroll-behavior:smooth}
+body{background:transparent!important;color:var(--az-ink)!important;font-family:var(--az-display)!important;font-variation-settings:"wdth" 100;-webkit-font-smoothing:antialiased}
+body::selection,::selection{background:var(--az-ink);color:#f7f8f9}
+
+/* the landing background, behind everything */
+#az-bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;
+  background:radial-gradient(110% 80% at 72% 18%,#fff 0%,rgba(255,255,255,0) 60%),radial-gradient(90% 70% at 6% 96%,#eceef0 0%,rgba(236,238,240,0) 70%),var(--az-bg)}
+#az-bg .brushed{position:absolute;inset:0;opacity:.7;background:repeating-linear-gradient(0deg,rgba(255,255,255,.7) 0 1px,rgba(30,36,44,.034) 1px 3px)}
+#az-bg .orb{position:absolute;border-radius:50%}
+#az-bg .o1{width:64vmax;height:64vmax;left:46%;top:-30%;background:radial-gradient(circle,rgba(255,255,255,.85),rgba(255,255,255,0) 62%);animation:azd1 48s ease-in-out infinite alternate}
+#az-bg .o2{width:56vmax;height:56vmax;left:-20%;top:44%;background:radial-gradient(circle,rgba(176,184,194,.32),rgba(176,184,194,0) 64%);animation:azd2 60s ease-in-out infinite alternate}
+@keyframes azd1{to{transform:translate3d(-12vw,12vh,0)}}@keyframes azd2{to{transform:translate3d(16vw,-12vh,0)}}
+#az-bg .trackbg{position:absolute;inset:0;width:100%;height:100%;opacity:.95}
+#az-bg .rn{stroke-dasharray:2.2 97.8;animation:azlap 15s linear infinite}#az-bg .rn-t{stroke-dasharray:16 84;opacity:.45}
+@keyframes azlap{to{stroke-dashoffset:-100}}
+#az-bg .gh{position:absolute;opacity:0;color:var(--az-ink);mix-blend-mode:multiply;animation:azghost 26s ease-in-out infinite;
+  -webkit-mask-image:radial-gradient(ellipse 46% 40% at var(--mx,50%) var(--my,50%),#000 0,rgba(0,0,0,.5) 45%,transparent 74%);mask-image:radial-gradient(ellipse 46% 40% at var(--mx,50%) var(--my,50%),#000 0,rgba(0,0,0,.5) 45%,transparent 74%)}
+#az-bg .gh svg{width:100%;height:auto;fill:currentColor;display:block}
+#az-bg .gh span{display:block;font:780 15vw/.9 var(--az-display);font-variation-settings:"wdth" 125;letter-spacing:-.04em;white-space:nowrap;text-transform:uppercase}
+#az-bg .g1{width:62vmin;right:-14vmin;top:-12vmin;--mx:30%;--my:70%}#az-bg .g2{left:-6vw;bottom:9vh;--mx:78%;--my:55%;animation-delay:-9s}
+#az-bg .g3{width:34vmin;left:8vw;top:30vh;--mx:60%;--my:30%;animation-delay:-17s}#az-bg .g4{right:-10vw;top:14vh;--mx:20%;--my:50%;animation-delay:-22s}#az-bg .g4 span{font-size:11vw}
+@keyframes azghost{0%,18%{opacity:0}34%{opacity:.09}46%{opacity:.06}60%,100%{opacity:0}}
+#az-bg .grain{position:absolute;inset:0;opacity:.05;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .12 0 0 0 0 .14 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* every section sits on the ground, not on its own colour block */
+.shopify-section,main,#MainContent,[class*="color-scheme"],[class*="color-"],section,.section,.page-width,.footer,.header-wrapper,.shopify-section-group-header-group,.shopify-section-group-footer-group{background-color:transparent!important}
+/* header + footer: frosted glass */
+header,.header,.header-wrapper,.section-header,.shopify-section-header-sticky header{background:linear-gradient(155deg,rgba(255,255,255,.7),rgba(255,255,255,.42))!important;-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid var(--az-line)!important;box-shadow:none!important}
+footer,.footer{background:linear-gradient(155deg,rgba(255,255,255,.55),rgba(255,255,255,.3))!important;-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);border-top:1px solid var(--az-line)!important}
+/* type */
+h1,h2,h3,.h0,.h1,.h2,.h3,.title,.product__title,.card__heading{font-family:var(--az-display)!important;font-variation-settings:"wdth" 125;font-weight:760!important;letter-spacing:-.03em!important;color:var(--az-ink)!important;text-wrap:balance}
+.header__heading-link,.site-header__logo,.header__heading,[class*="logo"] a{font-family:var(--az-mark)!important;letter-spacing:.32em;font-weight:700}
+p,li,label,.rte,.caption,span{color:inherit}
+a{color:inherit}
+/* buttons: the landing's dark pill */
+.button,.btn,button[type="submit"],.shopify-challenge__button,.cart__checkout-button,.product-form__submit,.shopify-payment-button__button--unbranded{border:0!important;border-radius:999px!important;background:linear-gradient(180deg,#30353b,#121417)!important;color:#f3f4f6!important;font:600 16px/1 var(--az-display)!important;padding:16px 28px;box-shadow:0 16px 34px -16px rgba(18,20,23,.6),inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.4)!important;transition:transform .9s var(--az-ease)}
+.button:hover,.btn:hover,button[type="submit"]:hover{transform:translateY(-1px)}
+.button::before,.button::after{display:none!important}
+.button--secondary,.button--tertiary{background:rgba(255,255,255,.6)!important;color:var(--az-ink)!important;box-shadow:inset 0 0 0 1px rgba(21,23,26,.16)!important}
+/* fields */
+input[type="text"],input[type="email"],input[type="password"],input[type="search"],input[type="tel"],input[type="number"],select,textarea,.field__input,.select__select{background:rgba(255,255,255,.75)!important;border:0!important;border-radius:14px!important;box-shadow:inset 0 0 0 1px rgba(21,23,26,.13)!important;color:var(--az-ink)!important;font-family:var(--az-display)!important}
+input:focus,select:focus,textarea:focus{outline:0!important;box-shadow:inset 0 0 0 2px var(--az-ink)!important}
+.field::before,.field::after,.select::before,.select::after{display:none!important}
+/* cards, panels */
+.card,.card-wrapper,.card__inner,.product-card,.collection-card,.cart-items,.cart__footer,.article-card,.blog-post-card,.drawer,.cart-drawer__dialog{background:linear-gradient(155deg,rgba(255,255,255,.74),rgba(255,255,255,.42) 58%,rgba(255,255,255,.6))!important;-webkit-backdrop-filter:blur(24px) saturate(150%);backdrop-filter:blur(24px) saturate(150%);border-radius:24px!important;border:0!important;box-shadow:0 30px 70px -32px rgba(26,32,40,.28),inset 0 1px 0 rgba(255,255,255,.95)!important}
+.card__media,.media,.product__media,img{border-radius:18px}
+hr,.divider{border-color:var(--az-line)!important}
+/* the announcement bar */
+.announcement-bar,.utility-bar{background:rgba(255,255,255,.6)!important;color:var(--az-steel)!important;border-bottom:1px solid var(--az-line)!important}
+@media(prefers-reduced-motion:reduce){#az-bg *{animation:none!important}}
