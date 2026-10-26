@@ -52,3 +52,18 @@ hr,.divider{border-color:var(--az-line)!important}
 /* the announcement bar */
 .announcement-bar,.utility-bar{background:rgba(255,255,255,.6)!important;color:var(--az-steel)!important;border-bottom:1px solid var(--az-line)!important}
 @media(prefers-reduced-motion:reduce){#az-bg *{animation:none!important}}
+
+/* ===== static background painted on <html>: always there, also when scrolling and in any overscroll ===== */
+html::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:#fbfbfc url(https://altuz-ten.vercel.app/shopify-atelier/altuz-bg.svg) center/cover no-repeat}
+html{background-color:#fbfbfc!important;background-image:none!important}
+body{background:transparent!important}
+#cbg .brushed,#az-bg .brushed{display:none}
+#cbg .trackbg g g:first-child,#az-bg .trackbg g g:first-child{display:none}
+#cbg,#az-bg,#gate{background:transparent!important}
+#gate{background:rgba(251,251,252,.0)!important}
+
+/* nothing black: theme colour schemes become transparent on the white ground */
+[class*="color-scheme"],[class*="color-"],.shopify-section,section{--color-background:transparent;--color-background-rgb:251,251,252;--color-foreground:21,23,26;--color-foreground-rgb:21,23,26;color:var(--az-ink)}
+body,main,#MainContent,.shopify-section,.page-width,.content-for-layout,.shopify-section-group-header-group,.shopify-section-group-footer-group,dialog,.drawer__inner{background-color:transparent!important;background-image:none!important}
+html{background-color:#fbfbfc!important}
+body{background:transparent!important}

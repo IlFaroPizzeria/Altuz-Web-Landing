@@ -1,5 +1,6 @@
 /* ALTUZ · store-wide background (the landing's). Skips itself on the Atelier, which draws its own. */
 (function(){
+  try{ let m=document.querySelector('meta[name=theme-color]'); if(!m){ m=document.createElement('meta'); m.name='theme-color'; document.head.appendChild(m); } m.content='#fbfbfc'; }catch(e){}
   if(document.getElementById('az-bg')||document.getElementById('cbg')||document.getElementById('gate')) return;
   const NS='http://www.w3.org/2000/svg';
   const el=(t,c)=>{ const e=document.createElement(t); if(c) e.className=c; return e; };
