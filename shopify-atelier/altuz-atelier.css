@@ -444,3 +444,7 @@ body.comm #app{position:relative;z-index:1}
 #cbg .set .logo,.tick .set .logo{color:rgba(21,23,26,.07)}
 .tick .track{color:rgba(21,23,26,.05)}
 .mlist{max-height:calc(100svh - 480px)}@media(max-width:820px){.mlist{max-height:calc(100svh - 400px)}}
+
+/* the Shopify theme paints <main> and sections with its own colour scheme: never on the Atelier */
+#comm,#comm>.pg,#app main,#app section,#app header,#app nav{background-color:transparent!important}
+#app .cdock.glass,#app .ctop .who.glass{background:linear-gradient(155deg,rgba(255,255,255,.7),rgba(255,255,255,.34) 58
