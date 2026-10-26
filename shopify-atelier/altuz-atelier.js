@@ -11,7 +11,7 @@ const SITE='https://altuz-ten.vercel.app/';
 const TOTAL=300, WAVES=[100,200,300];           // access waves by position in line (edit here)
 const pad=n=>String(n).padStart(3,'0');
 const el=(tag,cls,txt)=>{ const e=document.createElement(tag); if(cls) e.className=cls; if(txt!==undefined) e.textContent=txt; return e; };
-let myId=SAMPLE, started=false, introDone=false, MEMBER={n:1,rank:'Founder',name:'',invites:0,pos:0,joined:0}, PULSE=null;
+let myId=SAMPLE, started=false, introDone=false, MEMBER={n:1,rank:'Founder',name:'',invites:0,pos:0,joined:0}, PULSE=null, PIECES=null;
 
 /* ---------- gate ---------- */
 const idIn=$('#idIn'), gErr=$('#gErr');
@@ -54,14 +54,16 @@ function login(id,row){
   $('#gate').classList.add('out');
   build();
   rpc('community_pulse').then(p=>{ PULSE=p&&typeof p==='object'?p:null; paintPulse(); }).catch(()=>{ paintPulse(); });
+  rpc('community_pieces').then(p=>{ PIECES=p&&typeof p==='object'?p:null; paintPieces(); }).catch(()=>{});
 }
 
 /* ---------- community pages (one screen each, no scroll) ---------- */
 const NS='http://www.w3.org/2000/svg';
 const svgLogo=cls=>{ const lg=document.createElementNS(NS,'svg'); lg.setAttribute('class',cls||'logo'); lg.setAttribute('aria-hidden','true'); const u=document.createElementNS(NS,'use'); u.setAttribute('href','#logo'); lg.appendChild(u); return lg; };
 const ARROW=d=>{ const s=document.createElementNS(NS,'svg'); s.setAttribute('viewBox','0 0 24 24'); s.setAttribute('fill','none'); s.setAttribute('stroke','currentColor'); s.setAttribute('stroke-width','1.8'); s.setAttribute('stroke-linecap','round'); s.setAttribute('stroke-linejoin','round'); const p=document.createElementNS(NS,'path'); p.setAttribute('d',d); s.appendChild(p); return s; };
-const NAMES=['You','Registry','The room','Your number','Access'];
-let PAGES=[], cur=0, lockNav=false, mapLit=false, cardTick=null;
+const NAMES=['You','Community','Pieces','The room','Your number','Access'];
+const PRODUCTS=[['tee_black','Black tee'],['tee_white','White tee'],['short','Race short']];
+let PAGES=[], cur=-1, lockNav=false, mapLit=false;
 
 function bgBuild(){
   let bg=$('#cbg'); if(bg) bg.remove();
@@ -108,10 +110,10 @@ function build(){
   const bot=el('span','c-bot eng'); const l=el('span'); l.appendChild(el('small','','ID')); const cid=el('b','',myId); cid.id='cId'; l.appendChild(cid); const r=el('span','r'); r.appendChild(el('small','','Status')); r.appendChild(el('b','',MEMBER.rank)); bot.appendChild(l); bot.appendChild(r); card.appendChild(bot);
   cz.appendChild(card); cz.appendChild(el('p','card-cap','Your card. Personal and non-transferable.')); w.appendChild(cz);
   const tilt=(x,y)=>{ const b=card.getBoundingClientRect(); const px=clamp((x-b.left)/b.width,0,1), py=clamp((y-b.top)/b.height,0,1); card.style.setProperty('--ry',((px-.5)*14).toFixed(2)+'deg'); card.style.setProperty('--rx',((.5-py)*10).toFixed(2)+'deg'); card.style.setProperty('--lx',(px*100).toFixed(1)+'%'); card.style.setProperty('--ly',(py*100).toFixed(1)+'%'); };
-  if(!RM){ addEventListener('pointermove',e=>{ if(cur===0) tilt(e.clientX,e.clientY); },{passive:true}); }
+  if(!RM){ addEventListener('pointermove',e=>{ if(cur<=0) tilt(e.clientX,e.clientY); },{passive:true}); }
 
   /* 2 · registry */
-  w=page(' two'); const rp=head(w,'The Registry','Three hundred of us. One number each.','Every light is someone’s seat at the table. Yours is marked.');
+  w=page(' two'); const rp=head(w,'The community','Three hundred of us. One number each.','Every light is someone’s seat at the table. Yours is marked.');
   const cnt=el('div','counter'); const cn=el('b','chrome','0'); cn.id='cInside'; cnt.appendChild(cn); cnt.appendChild(el('span','','inside right now')); const cl=el('em','',''); cl.id='cLeft'; cnt.appendChild(cl); rp.appendChild(rv(cnt,.24));
   const rw=el('div','regwrap glass'); rv(rw,.2);
   const reg=el('div','reg'); reg.id='reg'; reg.setAttribute('role','img'); reg.setAttribute('aria-label','The registry of 300 numbers. Lit numbers are taken. Yours is marked.');
@@ -120,7 +122,16 @@ function build(){
   const key=el('div','key'); [['f','Founders · 001–002'],['','Origin · 003–100'],['','Circle · 101–300'],['me','You']].forEach(a=>{ const k=el('span','k'); k.appendChild(el('i',a[0])); k.appendChild(document.createTextNode(a[1])); key.appendChild(k); }); rw.appendChild(key);
   w.appendChild(rw);
 
-  /* 3 · the room (hints, never the product) */
+  /* 3 · the pieces already chosen */
+  w=page(); head(w,'The pieces','Already chosen.','Three pieces, each numbered 001 to 100. Every lit number belongs to a member who has already picked it. Yours is ringed.');
+  const boards=el('div','boards');
+  PRODUCTS.forEach((pr,bi)=>{ const b=el('div','board glass'); rv(b,.2+bi*.1);
+    const hd=el('div','bhd'); hd.appendChild(el('h3','',pr[1])); const cn2=el('span','bcount','—'); cn2.id='bc_'+pr[0]; hd.appendChild(cn2); b.appendChild(hd);
+    const g=el('div','bgrid'); g.id='bg_'+pr[0]; for(let n=1;n<=100;n++){ const c=el('span','c'+(n===MEMBER.n?' me':''),pad(n)); c.dataset.n=n; g.appendChild(c); } b.appendChild(g);
+    boards.appendChild(b); });
+  w.appendChild(boards);
+
+  /* 4 · the room */
   w=page(); head(w,'Our house','Not everyone gets in.','It’s small on purpose, so we can know every one of you by number.');
   const room=el('div','room');
   [['Not everyone gets in.','Altuz is a small, private society of runners. No shelf, no shop window, no checkout for strangers. Just a number, and it’s yours.',null],
@@ -155,23 +166,19 @@ function build(){
   inp.addEventListener('focus',()=>inp.select());
   w.appendChild(inv);
 
-  /* dock + arrows */
+  /* dock */
   const dock=el('nav','cdock glass'); dock.setAttribute('aria-label','Sections');
-  NAMES.forEach((n,i)=>{ if(!i) return; const b=el('button','',n); b.type='button'; b.setAttribute('aria-expanded','false'); b.addEventListener('click',()=>toggle(i)); b.dataset.i=i; dock.appendChild(b); }); app.appendChild(dock);
-  const scrim=el('div','cscrim'); scrim.id='cscrim'; scrim.addEventListener('click',()=>toggle(-1)); app.appendChild(scrim);
-  /* pages 2-5 become the landing's glass sheets */
-  PAGES.forEach((p,k)=>{ if(!k) return; const inner=p.firstChild; p.classList.add('sheet','glass'); p.setAttribute('role','dialog'); p.setAttribute('aria-label',NAMES[k]); p.inert=true;
-    const tp=el('div','sheet-top'); tp.appendChild(svgLogo('logo')); const x=el('button','x'); x.type='button'; x.setAttribute('aria-label','Close'); x.addEventListener('click',()=>toggle(-1)); tp.appendChild(x);
-    const body=el('div','sheet-body'); body.appendChild(inner); p.appendChild(tp); p.appendChild(body); });
-  const pg=(cls,d,lab,fn)=>{ const b=el('button','cpager glass '+cls); b.type='button'; b.setAttribute('aria-label',lab); b.appendChild(ARROW(d)); b.addEventListener('click',fn); app.appendChild(b); return b; };
-  cur=0; scrollTo(0,0); paintPulse(); intro();
+  NAMES.forEach((n,i)=>{ if(!i) return; const b=el('button','',n); b.type='button'; b.dataset.i=i; b.addEventListener('click',()=>go(i)); dock.appendChild(b); }); app.appendChild(dock);
+  cur=-1; scrollTo(0,0); paintPulse(); paintPieces(); intro();
 }
-function toggle(i){
-  const same=i===cur||i<1; PAGES.forEach((p,k)=>{ if(!k) return; const on=!same&&k===i; p.classList.toggle('open',on); p.classList.toggle('on',on); p.inert=!on; });
-  cur=same?0:i; document.body.classList.toggle('sheet-open',cur>0);
-  $$('.cdock button').forEach(b=>b.setAttribute('aria-expanded',String(+b.dataset.i===cur)));
-  if(cur===1&&!mapLit) lightMap();
-  if(cur>0){ const h=$('.sheet-body',PAGES[cur]); if(h) h.scrollTop=0; }
+function go(i){ const p=PAGES[clamp(i,0,PAGES.length-1)]; if(p) p.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'}); }
+function mark(i){ if(i===cur) return; cur=i; $$('.cdock button').forEach(b=>b.setAttribute('aria-current',String(+b.dataset.i===i))); if(i===1&&!mapLit) lightMap(); }
+let io=null;
+function watch(){ if(io) io.disconnect(); io=new IntersectionObserver(es=>{ es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('on'); const k=PAGES.indexOf(e.target); if(e.intersectionRatio>=.5||k===0) mark(k); } }); },{threshold:[.2,.5]}); PAGES.forEach(p=>io.observe(p)); }
+function paintPieces(){
+  PRODUCTS.forEach(pr=>{ const arr=PIECES&&Array.isArray(PIECES[pr[0]])?PIECES[pr[0]].map(Number):null; const g=$('#bg_'+pr[0]), c=$('#bc_'+pr[0]); if(!g) return;
+    if(!arr){ if(c) c.textContent='—'; return; } const S=new Set(arr.filter(n=>n>=1&&n<=100));
+    $$('.c',g).forEach(x=>x.classList.toggle('t',S.has(+x.dataset.n))); if(c) c.textContent=S.size+' / 100'; });
 }
 function taken(){ const t=PULSE&&Array.isArray(PULSE.taken)?PULSE.taken:[]; return t.map(Number).filter(n=>n>=1&&n<=TOTAL); }
 function lightMap(){ mapLit=true; const T=new Set(taken()); T.add(1); T.add(2); T.add(MEMBER.n); $$('#reg .d').forEach((d,i)=>{ if(T.has(i+1)) setTimeout(()=>d.classList.add('t'),RM?0:350+Math.min(1800,i*6)); }); }
@@ -211,12 +218,12 @@ function finishIntro(){
   if(introDone) return; introDone=true; introTimers.forEach(clearTimeout);
   const it=$('#cintro'); if(it){ it.classList.add('off'); setTimeout(()=>it.remove(),1800); }
   document.body.classList.remove('cin'); scrollTo(0,0);
-  setTimeout(()=>{ if(PAGES[0]) PAGES[0].classList.add('on'); rollId($('#cId'),myId,1300); },RM?0:500);
+  setTimeout(()=>{ if(PAGES[0]) PAGES[0].classList.add('on'); mark(0); watch(); rollId($('#cId'),myId,1300); },RM?0:500);
 }
-addEventListener('keydown',e=>{ if((e.key==='Escape'||e.key==='Enter')&&!introDone&&$('#cintro')) finishIntro(); else if(e.key==='Escape'&&cur>0) toggle(-1); });
+addEventListener('keydown',e=>{ if((e.key==='Escape'||e.key==='Enter')&&!introDone&&$('#cintro')) finishIntro(); });
 function logout(){
   ['#comm','.ctop','.cdock','.cpager','#cbg'].forEach(s=>$$(s).forEach(e=>e.remove()));
-  PAGES=[]; cur=0; mapLit=false; introTimers.forEach(clearTimeout); introDone=true; document.body.classList.remove('sheet-open'); document.body.classList.remove('cin'); const ci=$('#cintro'); if(ci) ci.remove(); scrollTo(0,0);
+  PAGES=[]; cur=0; mapLit=false; introTimers.forEach(clearTimeout); introDone=true; if(io) io.disconnect(); document.body.classList.remove('cin'); const ci=$('#cintro'); if(ci) ci.remove(); scrollTo(0,0);
   const g=$('#gate'); g.classList.remove('out'); idIn.value=''; gErr.textContent=''; setTimeout(()=>{ try{idIn.focus({preventScroll:true})}catch(e){} },400);
 }
 })();
