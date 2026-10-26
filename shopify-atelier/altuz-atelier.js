@@ -63,7 +63,7 @@ function login(id,row){
 const NS='http://www.w3.org/2000/svg';
 const svgLogo=cls=>{ const lg=document.createElementNS(NS,'svg'); lg.setAttribute('class',cls||'logo'); lg.setAttribute('aria-hidden','true'); const u=document.createElementNS(NS,'use'); u.setAttribute('href','#logo'); lg.appendChild(u); return lg; };
 const ARROW=d=>{ const s=document.createElementNS(NS,'svg'); s.setAttribute('viewBox','0 0 24 24'); s.setAttribute('fill','none'); s.setAttribute('stroke','currentColor'); s.setAttribute('stroke-width','1.8'); s.setAttribute('stroke-linecap','round'); s.setAttribute('stroke-linejoin','round'); const p=document.createElementNS(NS,'path'); p.setAttribute('d',d); s.appendChild(p); return s; };
-const NAMES=['You','Community','Members','The room','Your number','Access'];
+const NAMES=['You','The circle','Your people','Belonging','Your number','Bring one'];
 let PAGES=[], cur=-1, lockNav=false, mapLit=false;
 
 function bgBuild(){
@@ -113,8 +113,8 @@ function build(){
   if(!RM){ addEventListener('pointermove',e=>{ if(cur<=0) tilt(e.clientX,e.clientY); },{passive:true}); }
 
   /* 2 · registry */
-  w=page(' two'); const rp=head(w,'The community','Three hundred of us. One number each.','Every light is someone’s seat at the table. Yours is marked.');
-  const cnt=el('div','counter'); const cn=el('b','chrome','0'); cn.id='cInside'; cnt.appendChild(cn); cnt.appendChild(el('span','','inside right now')); const cl=el('em','',''); cl.id='cLeft'; cnt.appendChild(cl); rp.appendChild(rv(cnt,.24));
+  w=page(' two'); const rp=head(w,'The circle','You’re not a customer. You’re a number.','Three hundred seats, and one of them has your name on it. Every red light is someone who said yes before you. Every green one is still waiting. When the last one goes red, Drop 001 closes for good.');
+  const cnt=el('div','counter'); const cn=el('b','chrome','0'); cn.id='cInside'; cnt.appendChild(cn); cnt.appendChild(el('span','','of us, already inside')); const cl=el('em','',''); cl.id='cLeft'; cnt.appendChild(cl); rp.appendChild(rv(cnt,.24));
   const rw=el('div','regwrap glass'); rv(rw,.2);
   const reg=el('div','reg'); reg.id='reg'; reg.setAttribute('role','img'); reg.setAttribute('aria-label','The 300 numbers. Green is free, red is taken. Yours is marked.');
   for(let i=1;i<=TOTAL;i++){ const d=el('span','d'+(i<=2?' f':'')+(i===MEMBER.n?' me':'')); d.title=pad(i); reg.appendChild(d); }
@@ -123,22 +123,22 @@ function build(){
   w.appendChild(rw);
 
   /* 3 · who is already inside (from the Supabase list) */
-  w=page(); head(w,'The members','Already inside.','These are the runners who already hold a number. Their IDs stay half hidden. Yours is marked.');
+  w=page(); head(w,'Your people','The ones who run while the city sleeps.','Every name below holds a number, like you. You won’t find them anywhere else, and they won’t find you either, except here and on the road before sunrise.');
   const mp=el('div','mpanel glass'); rv(mp,.2);
-  const mh=el('div','mhd'); mh.appendChild(el('b','chrome','—')).id='mCount'; mh.appendChild(el('span','','members inside')); mp.appendChild(mh);
+  const mh=el('div','mhd'); mh.appendChild(el('b','chrome','—')).id='mCount'; mh.appendChild(el('span','','runners you belong with')); mp.appendChild(mh);
   const ml=el('div','mlist'); ml.id='mlist'; mp.appendChild(ml); w.appendChild(mp);
 
   /* 4 · the room */
-  w=page(); head(w,'Our house','Not everyone gets in.','It’s small on purpose, so we can know every one of you by number.');
+  w=page(); head(w,'Belonging','What being one of us means.','Not a discount, not points, not a newsletter. Belonging to Altuz is something you do, with the others, at hours most people never see.');
   const room=el('div','room');
-  [['Not everyone gets in.','Altuz is a small, private society of runners. No shelf, no shop window, no checkout for strangers. Just a number, and it’s yours.',null],
-   ['Cut for the hours before dawn.','Black. Silent. Finished by hand, where nobody looks. You’ll know it the moment you put it on, and so will whoever runs past you at five in the morning.',['Seen in the dark','Made in small numbers','Your number, inside']],
-   ['Made once. Numbered. Never again.','What we make is written to your ID and carries your number. Once a number is taken it’s closed: no restock, no second chance, no discount.',null]
+  [['We run together.','The Number Run: once a month, before sunrise, members only, by number. No pace groups, no strangers. Your first one is already waiting for you.',['Monthly','At dawn','Members only']],
+   ['You’ll know each other.','The mark only shows in the light. When a car passes at six in the morning and someone lights up across the street, you’re looking at one of the three hundred.',['Seen in the dark','Never on sale','Your number, inside']],
+   ['First, always.','Every drop opens to members 48 hours before anyone else, and your number is held for you in every drop that follows. Outside, they wait. You don’t.',['48 h early','Your number, for life']]
   ].forEach((a,i)=>{ const pn=el('div','pn glass'); rv(pn,.2+i*.1); pn.appendChild(el('h3','',a[0])); pn.appendChild(el('p','',a[1])); if(a[2]){ const ch=el('div','chips'); a[2].forEach(t=>ch.appendChild(el('span','',t))); pn.appendChild(ch); } room.appendChild(pn); });
   w.appendChild(room);
 
   /* 4 · your number: personal and non-transferable */
-  w=page(); head(w,'Your number','Yours alone. For good.','Like your name, your number goes with you. Nobody borrows it and nobody buys it.');
+  w=page(); head(w,'Your number','Yours alone. For good.','A number isn’t bought. It’s given, once, and it stays with you. Like your name, it goes wherever you run, and nobody else will ever wear it.');
   const rules=el('div','rules');
   [['Personal','Your ID is written to you and to nobody else. It can’t be lent, sold or transferred, and a piece can’t be passed on outside the society.'],
    ['One ID, two pieces','Each ID may hold one tee and one short, no more. Both carry the same member number, yours.'],
@@ -148,12 +148,12 @@ function build(){
   w.appendChild(rules);
 
   /* 5 · access + invitations */
-  w=page(' two'); const ap=head(w,'Access','Bring someone you’d run with.','Founders first. After them, whoever has opened the most doors. If you tie, the lower number goes first. Three waves, one hundred places each.');
+  w=page(' two'); const ap=head(w,'Bring one','Choose who comes in with you.','The circle only grows through its members. Founders open first, then whoever has opened the most doors; on a tie, the lower number goes first. Three waves, one hundred places each.');
   const wvs=el('div','waves'); WAVES.forEach((e,i)=>{ const a=i?WAVES[i-1]+1:1; const d=el('div','wv'+(hasPos&&wv===i+1?' on':'')); d.appendChild(el('small','','Wave '+(i+1))); d.appendChild(el('b','',a+'–'+e)); d.appendChild(el('span','',i===0?'Opens first':i===1?'Opens next':'Opens last')); wvs.appendChild(d); }); ap.appendChild(rv(wvs,.24));
-  ap.appendChild(rv(el('p','stay','Stay close. Dates are shared here first, on this ID, before anywhere else.'),.3)).style.marginTop='16px';
+  ap.appendChild(rv(el('p','stay','Wherever you run, you run with three hundred. Dates are shared here first, on this ID, before anywhere else.'),.3)).style.marginTop='16px';
   const inv=el('div','invite glass'); rv(inv,.2);
-  inv.appendChild(el('h3','wide','Open a door for them.'));
-  inv.appendChild(el('p','','Every runner who requests an ID through your link moves you up the line. Send it to the friend you’d meet at dawn.'));
+  inv.appendChild(el('h3','wide','Open the door for one of yours.'));
+  inv.appendChild(el('p','','Your link is personal. Every runner who asks for an ID through it moves you up the line. Send it to the friend you’d want next to you at dawn, not to everyone.'));
   const link=SITE+'?ref='+pad(MEMBER.n);
   const row=el('div','linkrow'); const inp=el('input'); inp.type='text'; inp.readOnly=true; inp.value=link; inp.setAttribute('aria-label','Your invitation link'); row.appendChild(inp);
   const cpb=el('button','btn small','Copy link'); cpb.type='button'; row.appendChild(cpb); inv.appendChild(row);
@@ -175,7 +175,7 @@ function watch(){ if(io) io.disconnect(); io=new IntersectionObserver(es=>{ es.f
 function paintMembers(){
   const box=$('#mlist'); if(!box) return; box.textContent='';
   const arr=MEMBERS&&Array.isArray(MEMBERS)?MEMBERS:null; const c=$('#mCount');
-  if(!arr){ if(c) c.textContent='—'; box.appendChild(el('p','mempty','The list is loading.')); return; }
+  if(!arr){ if(c) c.textContent='—'; box.appendChild(el('p','mempty','The circle is gathering. Names appear here as they arrive.')); return; }
   if(c) c.textContent=String(arr.length);
   arr.forEach(m=>{ const n=parseInt(m.n,10); if(!(n>=1)) return; const me=n===MEMBER.n; const r=el('div','mrow'+(me?' me':'')); r.appendChild(el('i'));
     const num=el('b','',pad(n)); r.appendChild(num); const nm=el('span','mname',me?'You':(clean(m.alias)||'Member')); r.appendChild(nm); r.appendChild(el('em','',String(m.id||'').replace(/[^0-9A-Z•*]/gi,''))); box.appendChild(r); });
@@ -186,7 +186,7 @@ function lightMap(){ mapLit=true; const T=new Set(taken()); T.add(1); T.add(2); 
 function paintPulse(){
   const joined=PULSE&&Number.isFinite(+PULSE.joined)?+PULSE.joined:Math.max(MEMBER.joined,0);
   const c=$('#cInside'), l=$('#cLeft'); if(!c) return;
-  if(joined>0){ const t0=performance.now(); const step=n=>{ const p=RM?1:clamp((n-t0)/1400,0,1); c.textContent=String(Math.round(joined*(1-Math.pow(1-p,3)))); if(p<1) requestAnimationFrame(step); }; requestAnimationFrame(step); if(l) l.textContent=(TOTAL-joined)+' numbers still unclaimed'; } else { c.textContent='—'; if(l) l.textContent=''; }
+  if(joined>0){ const t0=performance.now(); const step=n=>{ const p=RM?1:clamp((n-t0)/1400,0,1); c.textContent=String(Math.round(joined*(1-Math.pow(1-p,3)))); if(p<1) requestAnimationFrame(step); }; requestAnimationFrame(step); if(l) l.textContent=(TOTAL-joined)+' seats left. They won’t be offered twice.'; } else { c.textContent='—'; if(l) l.textContent=''; }
   if(mapLit){ const T=new Set(taken()); $$('#reg .d').forEach((d,i)=>{ if(T.has(i+1)) d.classList.add('t'); }); }
 }
 function rollId(e,final,ms){

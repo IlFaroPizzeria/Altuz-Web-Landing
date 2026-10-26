@@ -435,3 +435,12 @@ body.comm #app{position:relative;z-index:1}
 #cbg{background:url(https://altuz-ten.vercel.app/shopify-atelier/altuz-bg.svg) center/cover no-repeat,radial-gradient(110% 80% at 72% 18%,#ffffff 0%,rgba(255,255,255,0) 60%),radial-gradient(90% 70% at 6% 96%,#eceef0 0%,rgba(236,238,240,0) 70%),#fbfbfc!important}
 #gate{background:radial-gradient(110% 80% at 72% 18%,#ffffff 0%,rgba(255,255,255,0) 60%),radial-gradient(90% 70% at 6% 96%,#eceef0 0%,rgba(236,238,240,0) 70%),#fbfbfc!important}
 .halo,#cbg .halo,#az-bg .halo{display:none!important}
+
+/* ===== v7: exactly the landing's ground (altuz-ten.vercel.app) ===== */
+#cbg{background:radial-gradient(120% 90% at 78% 8%,#ffffff 0%,rgba(255,255,255,0) 55%),radial-gradient(80% 70% at 4% 100%,#eceef1 0%,rgba(236,238,241,0) 70%),#fbfbfc!important}
+#cbg .brushed{display:block!important;opacity:.42;background:repeating-linear-gradient(0deg,rgba(255,255,255,.5) 0 1px,rgba(30,36,44,.022) 1px 3px)}
+#cbg .trackbg g g:first-child{display:inline!important}
+#cbg .track{color:rgba(21,23,26,.05)}
+#cbg .set .logo,.tick .set .logo{color:rgba(21,23,26,.07)}
+.tick .track{color:rgba(21,23,26,.05)}
+.mlist{max-height:calc(100svh - 480px)}@media(max-width:820px){.mlist{max-height:calc(100svh - 400px)}}
