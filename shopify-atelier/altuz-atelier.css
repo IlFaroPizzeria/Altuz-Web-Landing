@@ -391,3 +391,37 @@ body{background:transparent!important}
 #cbg .trackbg g g:first-child,#az-bg .trackbg g g:first-child{display:none}
 #cbg,#az-bg,#gate{background:transparent!important}
 #gate{background:rgba(251,251,252,.0)!important}
+
+/* ===== v5: white luxury — glass and future (same language as the landing) ===== */
+:root{--hud:rgba(21,23,26,.32)}
+#cbg::before,#gate::after,#az-bg::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(21,23,26,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(21,23,26,.05) 1px,transparent 1px);background-size:96px 96px;background-position:center;
+  -webkit-mask-image:radial-gradient(ellipse 72% 62% at 50% 46%,#000 0,rgba(0,0,0,.4) 58%,transparent 100%);mask-image:radial-gradient(ellipse 72% 62% at 50% 46%,#000 0,rgba(0,0,0,.4) 58%,transparent 100%)}
+#cbg::after,#az-bg::after{content:"ALTUZ";position:absolute;left:50%;top:56%;transform:translate3d(-50%,-50%,0);pointer-events:none;
+  font:800 30vw/.8 var(--display,'Archivo',sans-serif);font-variation-settings:"wdth" 125;letter-spacing:-.045em;white-space:nowrap;
+  color:rgba(21,23,26,.018);-webkit-text-stroke:1px rgba(21,23,26,.075);animation:azdrift 40s ease-in-out infinite alternate;transition:opacity 1.6s}
+@keyframes azdrift{to{transform:translate3d(-49%,-52%,0)}}
+@media(orientation:portrait){#cbg::after,#az-bg::after{font-size:44vw;top:60%}}
+body.cin #cbg::after{opacity:0}
+#cbg .grain::after,#az-bg .grain::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;opacity:0;
+  background:linear-gradient(90deg,transparent,rgba(21,23,26,.16) 30%,rgba(21,23,26,.22) 50%,rgba(21,23,26,.16) 70%,transparent);
+  box-shadow:0 0 18px 2px rgba(255,255,255,.9);animation:azscan 16s cubic-bezier(.45,0,.55,1) infinite}
+#cbg .grain,#az-bg .grain{overflow:visible}
+@keyframes azscan{0%{transform:translateY(-2vh);opacity:0}8%{opacity:1}92%{opacity:1}100%{transform:translateY(102vh);opacity:0}}
+/* glass with a faint prism edge */
+.glass{background:linear-gradient(155deg,rgba(255,255,255,.66),rgba(255,255,255,.3) 55%,rgba(255,255,255,.52));
+  -webkit-backdrop-filter:blur(32px) saturate(185%);backdrop-filter:blur(32px) saturate(185%);
+  box-shadow:0 40px 90px -42px rgba(26,32,40,.3),0 1px 2px rgba(26,32,40,.05),inset 0 1px 0 #fff,inset 0 -1px 0 rgba(255,255,255,.5)}
+.glass::before{background:linear-gradient(135deg,#fff 0%,rgba(190,208,255,.6) 24%,rgba(255,255,255,.12) 48%,rgba(255,206,232,.5) 74%,#fff 100%)}
+/* HUD corner marks on the big panels */
+.regwrap::after,.mpanel::after,.invite::after,.gate-in::after,.room .pn::after{content:"";position:absolute;inset:10px;border-radius:inherit;pointer-events:none;opacity:.9;
+  background:
+    linear-gradient(var(--hud),var(--hud)) 0 0/12px 1px no-repeat,linear-gradient(var(--hud),var(--hud)) 0 0/1px 12px no-repeat,
+    linear-gradient(var(--hud),var(--hud)) 100% 0/12px 1px no-repeat,linear-gradient(var(--hud),var(--hud)) 100% 0/1px 12px no-repeat,
+    linear-gradient(var(--hud),var(--hud)) 0 100%/12px 1px no-repeat,linear-gradient(var(--hud),var(--hud)) 0 100%/1px 12px no-repeat,
+    linear-gradient(var(--hud),var(--hud)) 100% 100%/12px 1px no-repeat,linear-gradient(var(--hud),var(--hud)) 100% 100%/1px 12px no-repeat}
+.regwrap,.mpanel,.invite,.gate-in,.room .pn{position:relative}
+.pg:not(:first-child) .eyebrow::before{content:"";display:inline-block;width:22px;height:1px;background:currentColor;vertical-align:middle;margin-right:12px;opacity:.7}
+.rules .ru,.wv:not(.on),.mrow:not(.me){background:linear-gradient(160deg,rgba(255,255,255,.85),rgba(232,235,238,.55));-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.stat small,.mini small,.wv small{letter-spacing:.2em}
+@media(prefers-reduced-motion:reduce){#cbg::after,#az-bg::after,#cbg .grain::after,#az-bg .grain::after{animation:none!important}}

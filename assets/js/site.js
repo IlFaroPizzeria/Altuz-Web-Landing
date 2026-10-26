@@ -35,7 +35,7 @@ function fragSVG(id,vb,label){
    '<rect class="lab" x="227" y="393" width="38" height="24" rx="1.5"/>'+
    '<text class="labt" x="246" y="402" font-size="6.6" text-anchor="middle" letter-spacing=".7">ALTUZ</text>'+
    '<text class="labt" x="246" y="408" font-size="2.7" text-anchor="middle" letter-spacing=".4" style="font-weight:500">RUN ELEVATED</text>'+
-   '<text class="labt" x="246" y="413" font-size="3.1" text-anchor="middle" style="font-weight:500">001 / 100</text>'+
+   '<text class="labt" x="246" y="413" font-size="3.1" text-anchor="middle" style="font-weight:500">001 / 300</text>'+
    '<g clip-path="url(#c'+id+')"><g class="pr" mask="url(#m'+id+')"><use href="#p'+id+'"/></g>'+
    '<g class="pr" mask="url(#mh'+id+')" filter="url(#b'+id+')" opacity=".9" style="fill:#fff"><use href="#p'+id+'"/></g></g></svg>';
 }
@@ -376,11 +376,11 @@ form.addEventListener('submit',async e=>{
   }
 });
 
-/* ---------- intro: headlights at night ---------- */
+/* ---------- intro: white entrance ---------- */
 const intro=$('#intro'), iwrap=$('#iwrap'), ibloom=$('#ibloom'), ibar=$('#ibar');
 const cones=[$('#cone1'),$('#cone2'),$('#cone3')], spots=[$('#spot1'),$('#spot2'),$('#spot3')];
 const TOKENS=['privileges','code','light','number','registry','admission','door'];
-const REVEAL=4.3, END=5.8;
+const REVEAL=3.6, END=5.0;
 let it0=0, iraf=0, started=false, revealed=false;
 /* three lights: two headlights from the lower corners and a short glint from above.
    Each is [source x,y], [target from x,y], [target to x,y], start, end, size (fractions of the screen). */
@@ -402,26 +402,12 @@ function startSite(){
     const h=(location.hash||'').slice(1); if(TOKENS.includes(h)) setTimeout(()=>openSheet(h),RM?0:900); }
 }
 function introFrame(now){
+  /* white entrance: the word settles out of a blur, a silver sheen crosses it, then the white curtain opens */
   const t=(now-it0)/1000, W=innerWidth, H=innerHeight, M=Math.max(W,H);
-  const portrait=H>W, rx=M*(portrait?.125:.165), ry=M*(portrait?.085:.135);
-  const masks=[];
-  (portrait?BEAMS_P:BEAMS).forEach((B,i)=>{
-    const p=easeIO(clamp((t-B.t0)/(B.t1-B.t0),0,1)), a=env(t,B.t0,B.t1)*(t<REVEAL?1:0);
-    const x=(B.a[0]+(B.b[0]-B.a[0])*p)*W, y=(B.a[1]+(B.b[1]-B.a[1])*p)*H;
-    const sx=B.s[0]*W, sy=B.s[1]*H, d=Math.hypot(x-sx,y-sy), ang=Math.atan2(y-sy,x-sx)*180/Math.PI;
-    const sr=B.k;
-    cones[i].style.width=d.toFixed(0)+'px'; cones[i].style.transform='translate3d('+sx.toFixed(0)+'px,'+sy.toFixed(0)+'px,0) rotate('+ang.toFixed(2)+'deg)'; cones[i].style.opacity=(a*.95).toFixed(3);
-    const sw=rx*2.6*sr, sh=ry*2.6*sr;
-    spots[i].style.width=sw.toFixed(0)+'px'; spots[i].style.height=sh.toFixed(0)+'px';
-    spots[i].style.transform='translate3d('+(x-sw/2).toFixed(0)+'px,'+(y-sh/2).toFixed(0)+'px,0)'; spots[i].style.opacity=a.toFixed(3);
-    if(a>.002) masks.push('radial-gradient(ellipse '+(rx*sr).toFixed(0)+'px '+(ry*sr).toFixed(0)+'px at '+x.toFixed(0)+'px '+y.toFixed(0)+'px,rgba(0,0,0,'+a.toFixed(3)+') 0%,rgba(0,0,0,'+(a*.5).toFixed(3)+') 45%,rgba(0,0,0,0) 100%)');
-  });
-  const m=masks.length?masks.join(','):'linear-gradient(transparent,transparent)';
-  iwrap.style.webkitMaskImage=m; iwrap.style.maskImage=m; ibloom.style.webkitMaskImage=m; ibloom.style.maskImage=m;
   ibar.style.transform='scaleX('+clamp(t/REVEAL,0,1).toFixed(4)+')';
   if(t>=REVEAL){
     if(!revealed){ revealed=true; intro.classList.add('reveal'); startSite(); try{ sessionStorage.setItem('altuz_intro','1'); }catch(e){} }
-    const q=easeIO(clamp((t-REVEAL)/(END-REVEAL-.2),0,1)), R=q*M*1.25, cx=W*.46, cy=H*.5;
+    const q=easeIO(clamp((t-REVEAL)/(END-REVEAL-.2),0,1)), R=q*M*1.25, cx=W*.5, cy=H*.5;
     const hole='radial-gradient(circle at '+cx.toFixed(0)+'px '+cy.toFixed(0)+'px,transparent '+R.toFixed(0)+'px,#000 '+(R+M*.22).toFixed(0)+'px)';
     intro.style.webkitMaskImage=hole; intro.style.maskImage=hole;
   }
