@@ -107,3 +107,4 @@ body::before{background:#fbfbfc}
 .glimpse i{background:linear-gradient(180deg,#30353b,#121417)}
 
 @media(prefers-reduced-motion:reduce){.bg::after,.brushed::after,.intro::after,.intro.run .iword{animation:none!important}.intro::after,.iword{opacity:1}}
+.halo,#halo{display:none!important}

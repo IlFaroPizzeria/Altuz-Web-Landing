@@ -5,6 +5,8 @@ const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelect
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 ['gate','app'].forEach(id=>{ const e=document.getElementById(id); if(e&&e.parentNode!==document.body) document.body.appendChild(e); });
+/* the logo sprite must live outside the theme wrappers, which are hidden on this page */
+(function(){ const sy=document.querySelector('symbol#logo'); const sv=sy&&sy.closest('svg'); if(sv){ sv.classList.add('az-sprite'); if(sv.parentNode!==document.body) document.body.insertBefore(sv,document.body.firstChild); } })();
 document.body.classList.add('comm');
 const SHOP=window.ALTUZ_SHOP||null, LET='TRWAGMYFPDXBNJZSQVHLCKE', SAMPLE='00000000T';
 const SITE='https://altuz-ten.vercel.app/';
@@ -72,8 +74,7 @@ function bgBuild(){
   t.innerHTML='<defs><linearGradient id="tfade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#15171a" stop-opacity="0"/><stop offset=".45" stop-color="#15171a" stop-opacity=".16"/><stop offset="1" stop-color="#15171a" stop-opacity=".02"/></linearGradient><filter id="tglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="7"/></filter></defs><g transform="rotate(-13 800 520)"><g fill="none" stroke="url(#tfade)" stroke-width="2"><rect x="120" y="110" width="1480" height="780" rx="390"/><rect x="154" y="144" width="1412" height="712" rx="356"/><rect x="188" y="178" width="1344" height="644" rx="322"/><rect x="222" y="212" width="1276" height="576" rx="288"/><rect x="256" y="246" width="1208" height="508" rx="254"/><rect x="290" y="280" width="1140" height="440" rx="220"/><rect x="324" y="314" width="1072" height="372" rx="186"/><rect x="358" y="348" width="1004" height="304" rx="152"/></g><g fill="none" stroke-linecap="round"><rect class="rn rn-g" pathLength="100" x="188" y="178" width="1344" height="644" rx="322" stroke="#fff" stroke-width="22" filter="url(#tglow)"/><rect class="rn" pathLength="100" x="188" y="178" width="1344" height="644" rx="322" stroke="#fff" stroke-width="5"/><rect class="rn rn-t" pathLength="100" x="188" y="178" width="1344" height="644" rx="322" stroke="#6f757c" stroke-width="3" style="animation-delay:-.45s"/></g></g>';
   bg.appendChild(t); bg.appendChild(el('div','orb o1')); bg.appendChild(el('div','orb o2'));
   const gs=el('div','ghosts'); [['g1','L'],['g2','Run elevated'],['g3','L'],['g4','Run elevated']].forEach(a=>{ const g=el('div','gh '+a[0]); if(a[1]==='L') g.appendChild(svgLogo('logo')); else g.appendChild(el('span','',a[1])); gs.appendChild(g); }); bg.appendChild(gs);
-  const halo=el('div','halo'); bg.appendChild(halo); bg.appendChild(el('div','grain'));
-  if(!RM&&matchMedia('(pointer:fine)').matches){ let hx=innerWidth/2,hy=innerHeight/2,tx=hx,ty=hy; addEventListener('pointermove',e=>{ tx=e.clientX; ty=e.clientY; halo.classList.add('on'); },{passive:true}); const f=()=>{ hx+=(tx-hx)*.07; hy+=(ty-hy)*.07; halo.style.transform='translate3d('+hx.toFixed(1)+'px,'+hy.toFixed(1)+'px,0)'; if(halo.isConnected) requestAnimationFrame(f); }; requestAnimationFrame(f); }
+  bg.appendChild(el('div','grain'));
   const tk=el('div','tick'); tk.setAttribute('aria-hidden','true'); const tr=el('div','track'); for(let k=0;k<2;k++){ const st=el('div','set'); ['Members only','Run elevated','Seen in the dark','Three hundred numbers','Ask to be let in','Alta luz'].forEach(x=>{ st.appendChild(el('span','',x)); st.appendChild(svgLogo('logo')); }); tr.appendChild(st); } tk.appendChild(tr); bg.appendChild(tk);
   $('#app').insertBefore(bg,$('#app').firstChild);
 }

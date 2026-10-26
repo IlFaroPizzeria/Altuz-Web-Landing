@@ -425,3 +425,13 @@ body.cin #cbg::after{opacity:0}
 .rules .ru,.wv:not(.on),.mrow:not(.me){background:linear-gradient(160deg,rgba(255,255,255,.85),rgba(232,235,238,.55));-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 .stat small,.mini small,.wv small{letter-spacing:.2em}
 @media(prefers-reduced-motion:reduce){#cbg::after,#az-bg::after,#cbg .grain::after,#az-bg .grain::after{animation:none!important}}
+
+
+/* ===== v6: the theme never shows through. White ground, no light following the cursor ===== */
+html{background:#fbfbfc!important}
+body.comm{background:#fbfbfc!important}
+body.comm>*:not(#gate):not(#app):not(script):not(style):not(link):not(noscript):not(.az-sprite){display:none!important}
+body.comm #app{position:relative;z-index:1}
+#cbg{background:url(https://altuz-ten.vercel.app/shopify-atelier/altuz-bg.svg) center/cover no-repeat,radial-gradient(110% 80% at 72% 18%,#ffffff 0%,rgba(255,255,255,0) 60%),radial-gradient(90% 70% at 6% 96%,#eceef0 0%,rgba(236,238,240,0) 70%),#fbfbfc!important}
+#gate{background:radial-gradient(110% 80% at 72% 18%,#ffffff 0%,rgba(255,255,255,0) 60%),radial-gradient(90% 70% at 6% 96%,#eceef0 0%,rgba(236,238,240,0) 70%),#fbfbfc!important}
+.halo,#cbg .halo,#az-bg .halo{display:none!important}
